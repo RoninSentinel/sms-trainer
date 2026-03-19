@@ -1,0 +1,24 @@
+.current-assignment {
+  display: flex; align-items: center; gap: 10px;
+  background: #0d1a0d; border: 1px solid #2a3a2a;
+  padding: 7px 10px; margin-bottom: 10px; font-size: 11px;
+}
+.assign-label { color: #888; }
+.assign-value { font-weight: bold; color: #e0e0e0; }
+.assign-family { padding: 2px 6px; font-size: 10px; font-weight: bold; }
+.family-gbu      { background: #003344; color: #00bcd4; }
+.family-jdam     { background: #2a1a00; color: #ff9800; }
+.family-hellfire { background: #1a0000; color: #f44336; }
+.assign-pwr { margin-left: auto; font-size: 10px; color: #555; }
+.assign-pwr.pwr-on { color: #4caf50; }
+.store-section-label { font-size: 10px; color: #888; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
+.store-family-group { margin-bottom: 10px; border: 1px solid #222; }
+.family-header { padding: 4px 8px; font-size: 10px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; }
+.store-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 7px 10px; border-top: 1px solid #1a1a1a;
+}
+.store-row.store-active { background: #001a22; }
+.store-label { font-size: 11px; flex: 1; }
+.store-actions { display: flex; gap: 5px; }
+.sta-type-badge { display: block; font-size: 8px; color: #888; margin-top: 1px; }

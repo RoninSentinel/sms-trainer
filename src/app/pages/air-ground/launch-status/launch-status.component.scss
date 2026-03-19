@@ -1,0 +1,22 @@
+.target-summary { background: #001a22; border: 1px solid #003344; padding: 8px 10px; margin-bottom: 10px; }
+.ts-label { font-size: 9px; color: #00bcd4; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 3px; }
+.ts-name  { font-size: 14px; font-weight: bold; color: #e0e0e0; margin-bottom: 3px; }
+.ts-coords, .ts-alt { font-size: 11px; color: #aaa; }
+.warn-banner { background: #1a0000; border: 1px solid #f44336; color: #f44336; padding: 8px 10px; margin-bottom: 10px; font-size: 11px; }
+.launch-section-label { font-size: 10px; color: #888; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
+.launch-table { width: 100%; border-collapse: collapse; font-size: 11px; }
+.launch-table th { background: #1a1a1a; padding: 5px 6px; text-align: left; color: #888; font-size: 10px; text-transform: uppercase; }
+.launch-table td { padding: 5px 6px; border-bottom: 1px solid #1a1a1a; }
+.launch-table tr.armed-row td { background: #001a00; }
+.status-chip { padding: 2px 5px; font-size: 9px; font-weight: bold; }
+.family-chip { padding: 2px 5px; font-size: 9px; font-weight: bold; }
+.fam-gbu      { background: #003344; color: #00bcd4; }
+.fam-jdam     { background: #2a1a00; color: #ff9800; }
+.fam-hellfire { background: #1a0000; color: #f44336; }
+.pwr-on { color: #4caf50; }
+.armed-summary { margin-top: 12px; border: 1px solid #003300; background: #001a00; padding: 8px 10px; }
+.as-label { font-size: 10px; color: #4caf50; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
+.as-row { display: flex; gap: 10px; font-size: 11px; margin-bottom: 4px; }
+.as-sta { color: #888; width: 40px; }
+.as-store { font-weight: bold; width: 70px; }
+.as-target { color: #00bcd4; }

@@ -1,0 +1,15 @@
+.tab-row { display: flex; gap: 5px; margin-bottom: 10px; }
+.target-card { border: 1px solid #2a2a2a; margin-bottom: 6px; background: #0d0d0d; }
+.target-card.t-selected { border-color: #00bcd4; background: #001a22; }
+.t-header { display: flex; align-items: center; gap: 8px; padding: 6px 8px; background: #1a1a1a; }
+.t-name { font-weight: bold; font-size: 12px; flex: 1; }
+.t-source { font-size: 9px; color: #888; background: #2a2a2a; padding: 2px 5px; }
+.t-sel-badge { font-size: 9px; color: #00bcd4; font-weight: bold; }
+.t-coords { display: flex; gap: 12px; padding: 5px 8px; font-size: 11px; color: #ccc; }
+.t-actions { display: flex; gap: 6px; padding: 4px 8px 6px; }
+.selected-summary { border: 1px solid #003344; background: #001a22; padding: 8px 10px; margin-top: 10px; }
+.summary-label { font-size: 10px; color: #00bcd4; text-transform: uppercase; margin-bottom: 5px; letter-spacing: 1px; }
+.summary-row { display: flex; gap: 8px; font-size: 11px; margin-bottom: 3px; }
+.summary-row > span:first-child { color: #888; width: 45px; }
+.btn-group { display: flex; gap: 3px; }
+.create-actions { display: flex; gap: 8px; justify-content: flex-end; }

@@ -1,0 +1,147 @@
+<div class="title-bar">{{ titleBar }}</div>
+<div class="page-layout">
+  <div class="control-section">
+    <button class="sms-btn" (click)="back()">&#8592; Select Store</button>
+    <button class="sms-btn" (click)="next()">Select Target &#8594;</button>
+  </div>
+
+  <div class="page-section">
+    <div class="station-row-btns">
+      <button *ngFor="let st of stations"
+              class="sms-btn"
+              [class.active]="selectedStationId === st.id"
+              (click)="selectStation(st.id)">
+        Sta {{ st.id }}
+        <span *ngIf="st.storeType" class="sta-badge">{{ st.storeType }}</span>
+      </button>
+    </div>
+
+    <div *ngIf="!selectedStation" class="no-selection">Select a station to view its store settings.</div>
+    <div *ngIf="selectedStation && family === 'Other'" class="no-selection">
+      No weapon-specific settings for store type: {{ selectedStation.storeType || 'None' }}
+    </div>
+
+    <ng-container *ngIf="selectedStation && (family === 'GBU') && gbu">
+      <div class="family-header family-gbu">GBU Laser / GPS Settings &mdash; {{ selectedStation.storeType }}</div>
+      <div class="settings-form">
+        <div class="settings-group">
+          <div class="group-label">Guidance</div>
+          <div class="setting-row">
+            <span>Guidance Mode</span>
+            <div class="btn-group">
+              <button class="sms-btn small" [class.active]="gbu.guidanceMode==='LGB'" (click)="gbu.guidanceMode='LGB'; saveGbu()">LGB</button>
+              <button class="sms-btn small" [class.active]="gbu.guidanceMode==='GPS'" (click)="gbu.guidanceMode='GPS'; saveGbu()">GPS</button>
+              <button class="sms-btn small" [class.active]="gbu.guidanceMode==='INS'" (click)="gbu.guidanceMode='INS'; saveGbu()">INS</button>
+            </div>
+          </div>
+          <div class="setting-row" *ngIf="gbu.guidanceMode === 'LGB' || gbu.guidanceMode === 'GPS'">
+            <span>Laser Receiver</span>
+            <button class="sms-btn small" [class.active]="gbu.laserReceiver" (click)="gbu.laserReceiver=!gbu.laserReceiver; saveGbu()">
+              {{ gbu.laserReceiver ? 'ON' : 'OFF' }}
+            </button>
+          </div>
+          <div class="setting-row" *ngIf="gbu.guidanceMode === 'LGB'">
+            <span>PRF Code</span>
+            <input class="sms-input small" [(ngModel)]="gbu.prf" maxlength="4" (change)="saveGbu()" />
+          </div>
+        </div>
+        <div class="settings-group">
+          <div class="group-label">Target Offset (m)</div>
+          <div class="setting-row"><span>North</span><input class="sms-input small" type="number" [(ngModel)]="gbu.offsetN" (change)="saveGbu()" /></div>
+          <div class="setting-row"><span>East</span><input class="sms-input small" type="number" [(ngModel)]="gbu.offsetE" (change)="saveGbu()" /></div>
+          <div class="setting-row"><span>Down</span><input class="sms-input small" type="number" [(ngModel)]="gbu.offsetD" (change)="saveGbu()" /></div>
+          <div class="setting-row"><span>Impact Angle</span><input class="sms-input small" type="number" min="0" max="90" [(ngModel)]="gbu.impactAngle" (change)="saveGbu()" /><span class="unit">deg</span></div>
+        </div>
+        <div class="settings-group">
+          <div class="group-label">Fuze</div>
+          <div class="setting-row">
+            <span>Arm State</span>
+            <button class="sms-btn small" [class.active]="gbu.fuzeArm==='ARM'" [class.warn]="gbu.fuzeArm==='ARM'" (click)="toggleGbuFuze()">{{ gbu.fuzeArm }}</button>
+          </div>
+          <div class="setting-row">
+            <span>Fuzing Type</span>
+            <button class="sms-btn small" (click)="cycleGbuFuzing()">{{ gbu.fuzingType }}</button>
+          </div>
+        </div>
+      </div>
+    </ng-container>
+
+    <ng-container *ngIf="selectedStation && family === 'JDAM' && jdam">
+      <div class="family-header family-jdam">JDAM GPS/INS Settings &mdash; {{ selectedStation.storeType }}</div>
+      <div class="settings-form">
+        <div class="settings-group">
+          <div class="group-label">Guidance</div>
+          <div class="setting-row">
+            <span>Guidance Mode</span>
+            <div class="btn-group">
+              <button class="sms-btn small" [class.active]="jdam.guidanceMode==='GPS'"     (click)="jdam.guidanceMode='GPS';     saveJdam()">GPS</button>
+              <button class="sms-btn small" [class.active]="jdam.guidanceMode==='INS'"     (click)="jdam.guidanceMode='INS';     saveJdam()">INS</button>
+              <button class="sms-btn small" [class.active]="jdam.guidanceMode==='GPS/INS'" (click)="jdam.guidanceMode='GPS/INS'; saveJdam()">GPS/INS</button>
+            </div>
+          </div>
+          <div class="setting-row">
+            <span>Terminal Mode</span>
+            <div class="btn-group">
+              <button class="sms-btn small" [class.active]="jdam.terminalMode==='VERTICAL'" (click)="jdam.terminalMode='VERTICAL'; saveJdam()">Vertical</button>
+              <button class="sms-btn small" [class.active]="jdam.terminalMode==='OBLIQUE'"  (click)="jdam.terminalMode='OBLIQUE';  saveJdam()">Oblique</button>
+            </div>
+          </div>
+        </div>
+        <div class="settings-group">
+          <div class="group-label">Target Offset (m)</div>
+          <div class="setting-row"><span>North</span><input class="sms-input small" type="number" [(ngModel)]="jdam.offsetN" (change)="saveJdam()" /></div>
+          <div class="setting-row"><span>East</span><input class="sms-input small" type="number" [(ngModel)]="jdam.offsetE" (change)="saveJdam()" /></div>
+          <div class="setting-row"><span>Down</span><input class="sms-input small" type="number" [(ngModel)]="jdam.offsetD" (change)="saveJdam()" /></div>
+          <div class="setting-row"><span>Impact Angle</span><input class="sms-input small" type="number" min="0" max="90" [(ngModel)]="jdam.impactAngle" (change)="saveJdam()" /><span class="unit">deg</span></div>
+        </div>
+        <div class="settings-group">
+          <div class="group-label">Fuze</div>
+          <div class="setting-row">
+            <span>Arm State</span>
+            <button class="sms-btn small" [class.active]="jdam.fuzeArm==='ARM'" [class.warn]="jdam.fuzeArm==='ARM'" (click)="toggleJdamFuze()">{{ jdam.fuzeArm }}</button>
+          </div>
+          <div class="setting-row">
+            <span>Fuzing</span>
+            <button class="sms-btn small" (click)="cycleJdamFuzing()">{{ jdam.fuzingType }}</button>
+          </div>
+        </div>
+      </div>
+    </ng-container>
+
+    <ng-container *ngIf="selectedStation && family === 'Hellfire' && hf">
+      <div class="family-header family-hellfire">Hellfire Settings &mdash; {{ selectedStation.storeType }}</div>
+      <div class="settings-form">
+        <div class="settings-group">
+          <div class="group-label">Seeker</div>
+          <div class="setting-row">
+            <span>Seeker Mode</span>
+            <button class="sms-btn small" [class.active]="hf.seekerMode==='LOBL'" (click)="cycleHfSeeker()">{{ hf.seekerMode }}</button>
+          </div>
+          <div class="setting-row">
+            <span>Laser Code</span>
+            <input class="sms-input small" [(ngModel)]="hf.laserCode" maxlength="4" (change)="saveHf()" />
+          </div>
+          <div class="setting-row">
+            <span>LST</span>
+            <button class="sms-btn small" [class.active]="hf.laserSpotTracker" (click)="hf.laserSpotTracker=!hf.laserSpotTracker; saveHf()">{{ hf.laserSpotTracker ? 'ON' : 'OFF' }}</button>
+          </div>
+        </div>
+        <div class="settings-group">
+          <div class="group-label">Warhead / Motor</div>
+          <div class="setting-row">
+            <span>Warhead</span>
+            <button class="sms-btn small" (click)="cycleHfWarhead()">{{ hf.warheadType }}</button>
+          </div>
+          <div class="setting-row">
+            <span>Rocket Motor</span>
+            <button class="sms-btn small" (click)="cycleHfMotor()">{{ hf.rocketMotor }}</button>
+          </div>
+          <div class="setting-row">
+            <span>Salvo Pulse</span>
+            <input class="sms-input small" type="number" min="1" max="8" [(ngModel)]="hf.salvoPulse" (change)="saveHf()" />
+          </div>
+        </div>
+      </div>
+    </ng-container>
+  </div>
+</div>
