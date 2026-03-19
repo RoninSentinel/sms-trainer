@@ -14,11 +14,11 @@ export class SelectStoreComponent implements OnInit, OnDestroy {
   private subs: Subscription[] = [];
 
   storeRows: { type: StoreType; label: string; family: string }[] = [
-    { type: 'GBU12',    label: 'GBU-12 (LGB)',       family: 'GBU' },
-    { type: 'GBU49',    label: 'GBU-49 (LGB/GPS)',   family: 'GBU' },
-    { type: 'GBU48',    label: 'GBU-48 (LGB/GPS)',   family: 'GBU' },
-    { type: 'JDAM',     label: 'GBU-38 JDAM',        family: 'JDAM' },
-    { type: 'Hellfire', label: 'AGM-114 Hellfire',   family: 'Hellfire' },
+    { type: 'GBU12',    label: 'GBU-12 (LGB)',     family: 'GBU' },
+    { type: 'GBU49',    label: 'GBU-49 (LGB/GPS)', family: 'GBU' },
+    { type: 'GBU48',    label: 'GBU-48 (LGB/GPS)', family: 'GBU' },
+    { type: 'JDAM',     label: 'GBU-38 JDAM',      family: 'JDAM' },
+    { type: 'Hellfire', label: 'AGM-114 Hellfire',  family: 'Hellfire' },
   ];
 
   constructor(public sms: SmsService, private router: Router) {}
@@ -57,6 +57,7 @@ export class SelectStoreComponent implements OnInit, OnDestroy {
     );
     this.sms.stations$.next(updated);
     this.sms.selectedStationId$.next(id);
+    this.router.navigate(['/air-ground/store-settings']);
   }
 
   setPower(on: boolean): void {
@@ -67,6 +68,4 @@ export class SelectStoreComponent implements OnInit, OnDestroy {
     );
     this.sms.stations$.next(updated);
   }
-
-  goToSettings(): void { this.router.navigate(['/air-ground/store-settings']); }
 }

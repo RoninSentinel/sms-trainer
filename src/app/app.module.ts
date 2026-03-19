@@ -18,17 +18,23 @@ import { SelectiveJettisonPageComponent } from './pages/selective-jettison/selec
 import { InventoryPageComponent } from './pages/inventory/inventory.component';
 
 const routes: Routes = [
-  { path: '',                            redirectTo: 'inventory', pathMatch: 'full' },
-  { path: 'air-ground',                  redirectTo: 'air-ground/select-store', pathMatch: 'full' },
-  { path: 'air-ground/select-store',     component: SelectStoreComponent },
-  { path: 'air-ground/store-settings',   component: StoreSettingsComponent },
-  { path: 'air-ground/select-target',    component: SelectTargetComponent },
-  { path: 'air-ground/release-settings', component: ReleaseSettingsComponent },
-  { path: 'air-ground/launch-status',    component: LaunchStatusComponent },
-  { path: 'profiles',                    component: ProfilesPageComponent },
-  { path: 'status',                      component: StatusPageComponent },
-  { path: 'selective-jettison',          component: SelectiveJettisonPageComponent },
-  { path: 'inventory',                   component: InventoryPageComponent },
+  { path: '', redirectTo: 'inventory', pathMatch: 'full' },
+  {
+    path: 'air-ground',
+    component: AirGroundPageComponent,
+    children: [
+      { path: '',                 redirectTo: 'select-store', pathMatch: 'full' },
+      { path: 'select-store',     component: SelectStoreComponent },
+      { path: 'store-settings',   component: StoreSettingsComponent },
+      { path: 'select-target',    component: SelectTargetComponent },
+      { path: 'release-settings', component: ReleaseSettingsComponent },
+      { path: 'launch-status',    component: LaunchStatusComponent },
+    ]
+  },
+  { path: 'profiles',           component: ProfilesPageComponent },
+  { path: 'status',             component: StatusPageComponent },
+  { path: 'selective-jettison', component: SelectiveJettisonPageComponent },
+  { path: 'inventory',          component: InventoryPageComponent },
 ];
 
 @NgModule({

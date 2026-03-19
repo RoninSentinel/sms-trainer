@@ -1,79 +1,73 @@
 <div class="title-bar">Air To Ground: Release Settings</div>
-<div class="page-layout">
-  <div class="control-section">
-    <button class="sms-btn" (click)="back()">&#8592; Select Target</button>
-    <button class="sms-btn" (click)="next()">Launch Status &#8594;</button>
+<div class="page-section">
+  <div class="station-row-btns">
+    <button *ngFor="let st of stations"
+            class="sms-btn"
+            [class.active]="selectedStationId === st.id"
+            [class.dimmed]="st.storeType && sms.getStoreFamily(st.storeType) !== family && selectedStationId !== st.id"
+            (click)="selectStation(st.id)">
+      Sta {{ st.id }}
+      <span *ngIf="st.storeType" class="sta-badge">{{ st.storeType }}</span>
+    </button>
   </div>
 
-  <div class="page-section">
-    <div class="station-row-btns">
-      <button *ngFor="let st of stations"
-              class="sms-btn"
-              [class.active]="selectedStationId === st.id"
-              (click)="selectStation(st.id)">
-        Sta {{ st.id }}
-        <span *ngIf="st.storeType" class="sta-badge">{{ st.storeType }}</span>
-      </button>
-    </div>
+  <div *ngIf="!selectedStation || !rel" class="no-selection">Select a station to configure release settings.</div>
 
-    <div *ngIf="!selectedStation || !rel" class="no-selection">Select a station to configure release settings.</div>
+  <ng-container *ngIf="selectedStation && rel">
+    <div class="settings-form">
 
-    <ng-container *ngIf="selectedStation && rel">
-      <div class="settings-form">
-
-        <ng-container *ngIf="family === 'GBU' || family === 'JDAM'">
-          <div class="settings-group">
-            <div class="group-label">Ripple Settings</div>
-            <div class="setting-row">
-              <span># of Weapons</span>
-              <input class="sms-input small" type="number" min="1" max="8" [(ngModel)]="rel.rippleCount" (change)="save()" />
-            </div>
-            <div class="setting-row">
-              <span>Interval (sec)</span>
-              <input class="sms-input small" type="number" step="0.32" min="0.32" max="10" [(ngModel)]="rel.rippleInterval" (change)="save()" />
-            </div>
-          </div>
-          <div class="settings-group">
-            <div class="group-label">Release Order</div>
-            <div *ngFor="let store of rel.releaseOrder; let i = index" class="release-order-row">
-              <span class="order-num">{{ i + 1 }}.</span>
-              <span class="order-store">{{ store }}</span>
-              <span class="order-time">+{{ getRippleTime(i) }}s</span>
-            </div>
-          </div>
-        </ng-container>
-
-        <ng-container *ngIf="family === 'Hellfire'">
-          <div class="settings-group">
-            <div class="group-label">Salvo Settings</div>
-            <div class="setting-row">
-              <span>Salvo Count</span>
-              <input class="sms-input small" type="number" min="1" max="8" [(ngModel)]="rel.rippleCount" (change)="save()" />
-            </div>
-            <div class="setting-row">
-              <span>Pulse Interval</span>
-              <input class="sms-input small" type="number" step="0.5" min="0.5" max="10" [(ngModel)]="rel.rippleInterval" (change)="save()" />
-              <span class="unit">sec</span>
-            </div>
-          </div>
-        </ng-container>
-
+      <ng-container *ngIf="family === 'GBU' || family === 'JDAM'">
         <div class="settings-group">
-          <div class="group-label">Tactical</div>
+          <div class="group-label">Ripple Settings</div>
           <div class="setting-row">
-            <span>Cue Mode</span>
-            <button class="sms-btn small active" (click)="cycleCueMode()">{{ rel.cueMode }}</button>
+            <span># of Weapons</span>
+            <input class="sms-input small" type="number" min="1" max="8" [(ngModel)]="rel.rippleCount" (change)="save()" />
           </div>
           <div class="setting-row">
-            <span>Target Type</span>
-            <div class="btn-group">
-              <button class="sms-btn small" [class.active]="rel.targetType==='Stationary'" (click)="rel.targetType='Stationary'; save()">Stationary</button>
-              <button class="sms-btn small" [class.active]="rel.targetType==='Moving'"     (click)="rel.targetType='Moving';     save()">Moving</button>
-            </div>
+            <span>Interval (sec)</span>
+            <input class="sms-input small" type="number" step="0.32" min="0.32" max="10" [(ngModel)]="rel.rippleInterval" (change)="save()" />
           </div>
         </div>
+        <div class="settings-group">
+          <div class="group-label">Release Order</div>
+          <div *ngFor="let store of rel.releaseOrder; let i = index" class="release-order-row">
+            <span class="order-num">{{ i + 1 }}.</span>
+            <span class="order-store">{{ store }}</span>
+            <span class="order-time">+{{ getRippleTime(i) }}s</span>
+          </div>
+        </div>
+      </ng-container>
 
+      <ng-container *ngIf="family === 'Hellfire'">
+        <div class="settings-group">
+          <div class="group-label">Salvo Settings</div>
+          <div class="setting-row">
+            <span>Salvo Count</span>
+            <input class="sms-input small" type="number" min="1" max="8" [(ngModel)]="rel.rippleCount" (change)="save()" />
+          </div>
+          <div class="setting-row">
+            <span>Pulse Interval</span>
+            <input class="sms-input small" type="number" step="0.5" min="0.5" max="10" [(ngModel)]="rel.rippleInterval" (change)="save()" />
+            <span class="unit">sec</span>
+          </div>
+        </div>
+      </ng-container>
+
+      <div class="settings-group">
+        <div class="group-label">Tactical</div>
+        <div class="setting-row">
+          <span>Cue Mode</span>
+          <button class="sms-btn small active" (click)="cycleCueMode()">{{ rel.cueMode }}</button>
+        </div>
+        <div class="setting-row">
+          <span>Target Type</span>
+          <div class="btn-group">
+            <button class="sms-btn small" [class.active]="rel.targetType==='Stationary'" (click)="rel.targetType='Stationary'; save()">Stationary</button>
+            <button class="sms-btn small" [class.active]="rel.targetType==='Moving'"     (click)="rel.targetType='Moving';     save()">Moving</button>
+          </div>
+        </div>
       </div>
-    </ng-container>
-  </div>
+
+    </div>
+  </ng-container>
 </div>
