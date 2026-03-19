@@ -1,0 +1,18 @@
+.loadout-area { background: #0d0d0d; border-bottom: 2px solid #444; padding: 5px 8px; flex-shrink: 0; }
+.loadout-label { font-size: 18px; color: #666; margin-bottom: 3px; text-transform: uppercase; letter-spacing: 1px; }
+.station-boxes { display: flex; gap: 4px; }
+.station-box {
+  flex: 1; border: 2px solid #444; padding: 3px 2px; cursor: pointer; border-radius: 10px;
+  text-align: center; background: #111; min-width: 0;
+}
+.station-box.selected { border: 2px dashed #00bcd4; }
+.sta-label { font-size: 16px; color: #888; margin-bottom: 2px; }
+.store-icon { font-size: 16px; font-weight: bold; color: #e0e0e0; background: #1a1a1a; padding: 1px; }
+.store-icon.empty { color: #444; }
+.store-info-box { display: flex; align-items: center; gap: 2px; margin-top: 2px; justify-content: center; }
+.sib-power { color: #444; font-size: 8px; }
+.sib-power.powered { color: #4caf50; }
+.sib-status { font-size: 12px; font-weight: bold; padding: 1px 2px; }
+.sub-info-box { display: flex; gap: 2px; font-size: 10px; align-items: center; justify-content: center; margin-top: 1px; }
+.sub-id { color: #666; }
+.sub-status { font-weight: bold; padding: 0 2px; }

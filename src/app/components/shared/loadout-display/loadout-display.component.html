@@ -1,0 +1,27 @@
+<div class="loadout-area">
+  <div class="loadout-label">LOADOUT DISPLAY</div>
+  <div class="station-boxes">
+    <div *ngFor="let st of stations"
+         class="station-box"
+         [class.selected]="st.id === activeStationId"
+         (click)="selectStation(st)">
+      <div class="sta-label">Sta {{ st.id }}</div>
+      <div class="store-icon" *ngIf="st.storeType">{{ st.storeType }}</div>
+      <div class="store-icon empty" *ngIf="!st.storeType">--</div>
+      <!-- Substations -->
+      <ng-container *ngIf="st.substations && st.substations.length > 0">
+        <div *ngFor="let sub of st.substations" class="sub-info-box">
+          <span class="sub-id">{{ sub.id }}</span>
+          <span class="sub-status" [ngClass]="getStatusClass(sub.storeStatus)">{{ sub.storeStatus || '--' }}</span>
+        </div>
+      </ng-container>
+      <!-- Single store info -->
+      <ng-container *ngIf="!st.substations || st.substations.length === 0">
+        <div class="store-info-box">
+          <span class="sib-power" [class.powered]="st.storePower">&#9679;</span>
+          <span class="sib-status" [ngClass]="getStatusClass(st.storeStatus)">{{ st.storeStatus || '--' }}</span>
+        </div>
+      </ng-container>
+    </div>
+  </div>
+</div>

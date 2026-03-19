@@ -1,0 +1,16 @@
+.store-row { display: flex; align-items: center; gap: 6px; border-bottom: 1px solid #1a1a1a; padding: 7px 0; }
+.store-row-label { flex: 1; font-size: 16px; }
+.target-type-row { display: flex; gap: 6px; margin-bottom: 10px; }
+.target-card { border: 1px solid #2a3a2a; padding: 10px; background: #0a150a; }
+.target-name { font-weight: bold; color: #00bcd4; margin-bottom: 6px; font-size: 12px; }
+.target-coord, .target-alt { font-size: 11px; color: #bbb; margin-bottom: 3px; }
+.target-actions { display: flex; gap: 6px; margin-top: 8px; }
+.release-order-row { display: flex; align-items: center; gap: 8px; margin-bottom: 5px; font-size: 11px; }
+.order-num { color: #888; width: 18px; }
+.order-store { flex: 1; }
+.order-time { color: #00bcd4; }
+.launch-table { width: 100%; border-collapse: collapse; font-size: 11px; }
+.launch-table th { background: #1a1a1a; padding: 5px 8px; text-align: left; color: #888; font-size: 10px; }
+.launch-table td { padding: 5px 8px; border-bottom: 1px solid #1a1a1a; }
+.status-chip { padding: 2px 5px; font-size: 10px; font-weight: bold; }
+.powered { color: #4caf50; }

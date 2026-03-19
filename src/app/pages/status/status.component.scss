@@ -1,0 +1,25 @@
+.status-table { width: 100%; border-collapse: collapse; font-size: 11px; }
+.status-table th { background: #1a1a1a; padding: 5px 8px; text-align: left; color: #888; font-size: 10px; text-transform: uppercase; }
+.status-table td { padding: 5px 8px; border-bottom: 1px solid #1a1a1a; }
+.pwr-on { color: #4caf50; }
+.status-chip { padding: 2px 5px; font-size: 10px; font-weight: bold; }
+.detail-card { border: 1px solid #222; margin-bottom: 6px; }
+.d-header { background: #1a1a1a; padding: 5px 8px; font-size: 11px; font-weight: bold; color: #00bcd4; }
+.d-grid { display: grid; grid-template-columns: 80px 1fr; gap: 3px; padding: 6px 8px; font-size: 11px; align-items: center; }
+.d-label { color: #888; }
+.sub-list { border-top: 1px solid #1a1a1a; padding: 5px 8px; }
+.sub-row { display: flex; gap: 8px; margin-bottom: 3px; font-size: 10px; align-items: center; }
+.sub-id { color: #888; width: 28px; }
+.sub-type { flex: 1; }
+.warn-badge {
+  display: inline-block; background: #f44336; color: #fff;
+  border-radius: 50%; width: 15px; height: 15px; line-height: 15px;
+  text-align: center; font-size: 9px; margin-left: 3px;
+}
+.warning-card { display: flex; gap: 10px; padding: 9px; margin-bottom: 5px; border-left: 4px solid #555; background: #1a1a1a; align-items: flex-start; }
+.warning-card.is-warning { border-color: #f44336; }
+.warning-card.is-caution { border-color: #ffeb3b; }
+.w-level { font-weight: bold; font-size: 11px; width: 65px; flex-shrink: 0; }
+.warning-card.is-warning .w-level { color: #f44336; }
+.warning-card.is-caution .w-level { color: #ffeb3b; }
+.w-msg { font-size: 11px; }

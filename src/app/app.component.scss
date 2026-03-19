@@ -1,0 +1,30 @@
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: #111; color: #e0e0e0; font-family: 'Courier New', monospace; }
+
+.sms-shell { display: flex; flex-direction: column; height: 100vh; background: #111; }
+.work-area { 
+  flex: 1; display: flex; flex-direction: column; overflow: hidden; padding: 2px 10px; min-height: 0; 
+}
+
+.indicators-bar { display: flex; align-items: center; gap: 4px; margin-bottom: 6px; }
+.indicator-label { color: #aaa; font-size: 11px; font-weight: bold; }
+.ml-8 { margin-left: 8px; }
+.indicator-dot { width: 14px; height: 14px; border-radius: 50%; border: 1px solid #555; background: #333; display: inline-block; }
+.ind-green        { background: #4caf50 !important; }
+.ind-red          { background: #f44336 !important; }
+.ind-yellow       { background: #ffeb3b !important; }
+.ind-blink-green  { background: #4caf50 !important; animation: blink .6s infinite; }
+.ind-blink-red    { background: #f44336 !important; animation: blink .6s infinite; }
+.ind-blink-yellow { background: #ffeb3b !important; animation: blink .6s infinite; }
+@keyframes blink { 50% { opacity: .2; } }
+
+.system-mode-area { display: flex; background: #1a1a1a; border-top: 2px solid #444; flex-shrink: 0; }
+.mode-btn {
+  flex: 1; text-align: center; padding: 6px 4px;
+  color: #e0e0e0; text-decoration: none; font-size: 14px; font-weight: bold;
+  text-transform: uppercase; border-right: 1px solid #444; cursor: pointer;
+  font-family: 'Courier New', monospace;
+}
+.mode-btn:last-child { border-right: none; }
+.mode-btn:hover { background: #2a2a2a; }
+.mode-btn.active { background: #003344; color: #00bcd4; border-top: 2px solid #00bcd4; }

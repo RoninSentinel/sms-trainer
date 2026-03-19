@@ -1,0 +1,53 @@
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html{
+  // zoom: 1.4;
+}
+
+body { background: #111; color: #e0e0e0; font-family: 'Courier New', monospace; font-size: 18px; }
+
+/* Shared button */
+.sms-btn {
+  background: #1e1e1e; color: #e0e0e0; border: 3px solid #555;
+  padding: 10px 10px; cursor: pointer; font-family: 'Courier New', monospace;
+  font-size: 16px; text-transform: uppercase; transition: background .15s; display: inline-block;
+  border-radius: 12px;
+}
+.sms-btn:hover { background: #2e2e2e; }
+.sms-btn.active { background: #003344; border-color: #00bcd4; color: #00bcd4; }
+.sms-btn.guarded { border-radius: 0 0 6px 6px; border-top: 3px solid #888; }
+.sms-btn:disabled { opacity: .4; cursor: not-allowed; }
+.sms-btn.small { padding: 3px 7px; font-size: 14px; border-radius: 5px; }
+
+/* Layout helpers */
+.title-bar {
+  background: #1a1a1a; border-bottom: 1px solid #444;
+  padding: 4px 8px; font-size: 16px; font-weight: bold;
+  color: #00bcd4; text-transform: uppercase; margin-bottom: 8px; flex-shrink: 0;
+}
+.page-layout { display: flex; flex: 1; gap: 8px; overflow: hidden; min-height: 0; }
+.control-section { width: 95px; display: flex; flex-direction: column; gap: 6px; flex-shrink: 0; }
+.page-section {
+  flex: 1; background: #0a0a0a; border: 1px solid #444;
+  padding: 8px; overflow-y: auto;
+}
+
+/* Status chips */
+.status-green  { background: #4caf50 !important; color: #000 !important; }
+.status-yellow { background: #ffeb3b !important; color: #000 !important; }
+.status-red    { background: #f44336 !important; color: #fff !important; }
+.status-black  { background: #000 !important; color: #aaa !important; border: 1px solid #333; }
+
+/* Common patterns */
+.station-row-btns { display: flex; gap: 4px; margin-bottom: 8px; flex-wrap: wrap; }
+.no-selection { color: #555; font-size: 12px; padding: 20px; text-align: center; }
+.settings-form { display: flex; flex-direction: column; gap: 10px; }
+.settings-group { border: 1px solid #2a2a2a; padding: 8px; }
+.group-label { font-size: 10px; color: #888; text-transform: uppercase; margin-bottom: 6px; letter-spacing: 1px; }
+.setting-row { display: flex; align-items: center; gap: 8px; margin-bottom: 5px; font-size: 11px; }
+.setting-row > span:first-child { min-width: 100px; color: #aaa; }
+.sms-input {
+  background: #111; border: 1px solid #444; color: #e0e0e0;
+  padding: 4px 6px; font-family: 'Courier New', monospace; font-size: 14px; width: 120px;
+}
+.sms-input.small { width: 60px; }

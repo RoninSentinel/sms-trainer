@@ -1,0 +1,17 @@
+.profiles-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 8px; padding: 8px 0; }
+.profile-slot {
+  border: 1px solid #333; padding: 14px 4px; text-align: center;
+  cursor: pointer; background: #111; position: relative;
+}
+.profile-slot.p-active   { border-color: #00bcd4; background: #003344; }
+.profile-slot.p-selected { outline: 2px solid #fff; }
+.p-num { font-size: 18px; font-weight: bold; }
+.p-active-tag { position: absolute; top: 2px; right: 3px; font-size: 7px; color: #00bcd4; }
+.overview-lights { margin-bottom: 12px; }
+.light-row { display: flex; align-items: center; gap: 8px; margin-bottom: 7px; font-size: 11px; }
+.light { width: 11px; height: 11px; border-radius: 50%; background: #2a2a2a; border: 1px solid #444; flex-shrink: 0; }
+.light.light-green { background: #4caf50; }
+.light.light-red   { background: #f44336; }
+.overview-fields { border-top: 1px solid #222; padding-top: 8px; }
+.detail-row { display: flex; gap: 8px; margin-bottom: 5px; font-size: 11px; }
+.detail-label { color: #888; width: 55px; }

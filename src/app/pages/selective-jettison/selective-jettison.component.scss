@@ -1,0 +1,18 @@
+.sj-instructions { font-size: 10px; color: #888; margin-bottom: 10px; padding: 6px; border: 1px solid #222; line-height: 1.5; }
+.sj-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; }
+.sj-card {
+  border: 1px solid #333; padding: 10px 6px; text-align: center;
+  cursor: pointer; background: #111; position: relative; transition: all .15s;
+}
+.sj-card:hover:not(.sj-empty):not(.sj-jetted) { border-color: #f44336; background: #1a0000; }
+.sj-card.sj-sel    { border: 2px solid #f44336; background: #1a0000; }
+.sj-card.sj-jetted { opacity: .45; cursor: default; }
+.sj-card.sj-empty  { cursor: default; opacity: .35; }
+.sj-sta  { font-size: 10px; color: #888; margin-bottom: 3px; }
+.sj-type { font-size: 12px; font-weight: bold; margin-bottom: 4px; }
+.sj-status { padding: 2px 5px; font-size: 9px; font-weight: bold; display: inline-block; }
+.sj-flag { position: absolute; top: 3px; right: 3px; font-size: 7px; font-weight: bold; }
+.sj-flag-sel { color: #f44336; }
+.sj-flag-jet { color: #666; }
+.sj-result { margin-top: 12px; padding: 9px; background: #1a0000; border: 1px solid #f44336; color: #f44336; font-size: 11px; }
+.sel-count { font-size: 10px; color: #f44336; text-align: center; margin-top: 4px; }

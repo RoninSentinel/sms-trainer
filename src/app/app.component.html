@@ -1,0 +1,18 @@
+<div class="sms-shell">
+  <app-loadout-display></app-loadout-display>
+  <div class="work-area">
+    <div class="indicators-bar">
+      <span class="indicator-label">LNK</span>
+      <span class="indicator-dot" [ngClass]="getLnkClass()"></span>
+      <span class="indicator-label ml-8">STS</span>
+      <span class="indicator-dot" [ngClass]="getStsClass()"></span>
+    </div>
+    <router-outlet></router-outlet>
+  </div>
+  <nav class="system-mode-area">
+    <a *ngFor="let nav of navItems"
+       [routerLink]="nav.path"
+       routerLinkActive="active"
+       class="mode-btn">{{ nav.label }}</a>
+  </nav>
+</div>
