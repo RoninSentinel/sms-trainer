@@ -1,15 +1,221 @@
-.tab-row { display: flex; gap: 5px; margin-bottom: 10px; }
-.target-card { border: 1px solid #2a2a2a; margin-bottom: 6px; background: #0d0d0d; }
-.target-card.t-selected { border-color: #00bcd4; background: #001a22; }
-.t-header { display: flex; align-items: center; gap: 8px; padding: 6px 8px; background: #1a1a1a; }
-.t-name { font-weight: bold; font-size: 12px; flex: 1; }
-.t-source { font-size: 9px; color: #888; background: #2a2a2a; padding: 2px 5px; }
-.t-sel-badge { font-size: 9px; color: #00bcd4; font-weight: bold; }
-.t-coords { display: flex; gap: 12px; padding: 5px 8px; font-size: 11px; color: #ccc; }
-.t-actions { display: flex; gap: 6px; padding: 4px 8px 6px; }
-.selected-summary { border: 1px solid #003344; background: #001a22; padding: 8px 10px; margin-top: 10px; }
-.summary-label { font-size: 10px; color: #00bcd4; text-transform: uppercase; margin-bottom: 5px; letter-spacing: 1px; }
-.summary-row { display: flex; gap: 8px; font-size: 11px; margin-bottom: 3px; }
-.summary-row > span:first-child { color: #888; width: 45px; }
-.btn-group { display: flex; gap: 3px; }
-.create-actions { display: flex; gap: 8px; justify-content: flex-end; }
+.tgt-page {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 8px 12px;
+  overflow: hidden;
+  position: relative;
+}
+
+.tgt-section-label {
+  color: #00ff99;
+  font-size: 12px;
+  font-weight: bold;
+  font-family: 'Courier New', monospace;
+  margin-bottom: 4px;
+}
+
+/* Cross-Cued card */
+.cctgp-card {
+  display: flex;
+  align-items: stretch;
+  border: 2px dashed #4a9eff;
+  background: #030d1a;
+  padding: 8px 12px;
+  gap: 12px;
+  border-radius: 2px;
+}
+
+.cctgp-empty {
+  color: #666;
+  font-size: 12px;
+  font-family: 'Courier New', monospace;
+  padding: 8px 12px;
+  border: 1px solid #333;
+  border-radius: 2px;
+}
+
+.cctgp-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.cctgp-row {
+  display: flex;
+  gap: 24px;
+  font-size: 12px;
+  font-family: 'Courier New', monospace;
+  color: #e0e0e0;
+}
+
+.cctgp-source {
+  font-weight: bold;
+  color: #fff;
+}
+
+.cctgp-tag { color: #aaa; }
+
+.cctgp-btns {
+  display: flex;
+  flex-direction: row;
+  gap: 8px;
+  align-items: center;
+}
+
+.sms-btn.cctgp-btn {
+  min-width: 90px;
+  padding: 8px 10px;
+  font-size: 12px;
+  text-align: center;
+  line-height: 1.4;
+}
+
+/* Saved Targets */
+.saved-area {
+  flex: 1;
+  display: flex;
+  flex-direction: row;
+  gap: 8px;
+  min-height: 0;
+  margin-top: 2px;
+}
+
+.saved-list {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  overflow: hidden;
+}
+
+.saved-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 7px 12px;
+  background: #0d0d0d;
+  border: 1px solid #333;
+  border-radius: 2px;
+  cursor: pointer;
+  transition: background 0.1s;
+
+  &:hover { background: #1a1a1a; border-color: #555; }
+  &.saved-selected { background: #001e34; border-color: #4a9eff; }
+}
+
+.saved-name {
+  width: 90px;
+  font-size: 12px;
+  font-weight: bold;
+  font-family: 'Courier New', monospace;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.saved-coords {
+  flex: 1;
+  display: flex;
+  gap: 16px;
+  font-size: 11px;
+  font-family: 'Courier New', monospace;
+  color: #ccc;
+}
+
+.saved-source {
+  font-size: 11px;
+  font-family: 'Courier New', monospace;
+  color: #888;
+  flex-shrink: 0;
+}
+
+/* Scroll buttons */
+.scroll-btns {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  justify-content: space-between;
+  padding: 4px 0;
+}
+
+.sms-btn.scroll-btn {
+  width: 52px;
+  height: 52px;
+  font-size: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  background: linear-gradient(180deg, #3a3a3a 0%, #2a2a2a 100%);
+  border: 2px solid #555;
+  border-radius: 6px;
+}
+
+/* Footer */
+.tgt-footer {
+  display: flex;
+  align-items: center;
+  padding: 6px 0 2px 0;
+  flex-shrink: 0;
+}
+
+.sms-btn.create-btn {
+  padding: 8px 18px;
+  font-size: 12px;
+  font-family: 'Courier New', monospace;
+  background: linear-gradient(180deg, #3a3a3a 0%, #2a2a2a 100%);
+  border: 2px solid #555;
+  border-radius: 6px;
+}
+
+/* Create form overlay */
+.create-form {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.75);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+}
+
+.create-form-inner {
+  background: #1a1a1a;
+  border: 2px solid #555;
+  border-radius: 8px;
+  padding: 16px 20px;
+  min-width: 340px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.create-title {
+  color: #00ff99;
+  font-size: 13px;
+  font-weight: bold;
+  text-transform: uppercase;
+  font-family: 'Courier New', monospace;
+  margin-bottom: 4px;
+}
+
+.cf-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cf-label {
+  width: 72px;
+  font-size: 12px;
+  color: #aaa;
+  font-family: 'Courier New', monospace;
+  flex-shrink: 0;
+}
+
+.cf-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 4px;
+}

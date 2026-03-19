@@ -1,82 +1,88 @@
 <div class="title-bar">Air To Ground: Select Target</div>
-<div class="page-layout">
-  <div class="control-section">
-    <button class="sms-btn" (click)="back()">&#8592; Store Settings</button>
-    <button class="sms-btn" (click)="next()" [disabled]="!selectedTargetName">Release Settings &#8594;</button>
+<div class="tgt-page">
+
+  <!-- Cross-Cued Targets section -->
+  <div class="tgt-section-label">Cross-Cued Targets</div>
+  <div class="cctgp-card" *ngIf="crossCuedTarget">
+    <div class="cctgp-info">
+      <div class="cctgp-row">
+        <span class="cctgp-source">{{ crossCuedTarget.source }}</span>
+        <span class="cctgp-tag">[{{ crossCuedTarget.source }}]</span>
+      </div>
+      <div class="cctgp-row">
+        <span>{{ crossCuedTarget.lat }}</span>
+        <span>{{ crossCuedTarget.alt }} m</span>
+      </div>
+      <div class="cctgp-row">
+        <span>{{ crossCuedTarget.lon }}</span>
+        <span>[{{ crossCuedTarget.altRef }}]</span>
+      </div>
+    </div>
+    <div class="cctgp-btns">
+      <button class="sms-btn cctgp-btn"
+              [class.active]="isSelected(crossCuedTarget.name)"
+              (click)="selectTarget(crossCuedTarget.name)">
+        {{ isSelected(crossCuedTarget.name) ? 'Deselect' : 'Select' }}
+      </button>
+      <button class="sms-btn cctgp-btn" (click)="updateTarget()">Target<br>Update</button>
+    </div>
+  </div>
+  <div class="cctgp-empty" *ngIf="!crossCuedTarget">
+    No cross-cued targets available.
   </div>
 
-  <div class="page-section">
-    <div class="tab-row">
-      <button class="sms-btn small" [class.active]="activeTab==='saved'"     (click)="activeTab='saved'">Saved Targets</button>
-      <button class="sms-btn small" [class.active]="activeTab==='crosscued'" (click)="activeTab='crosscued'">Cross-Cued</button>
-      <button class="sms-btn small" [class.active]="activeTab==='create'"    (click)="activeTab='create'">Create Target</button>
-    </div>
-
-    <ng-container *ngIf="activeTab === 'saved'">
-      <div *ngIf="targets.length === 0" class="no-selection">No saved targets.</div>
-      <div *ngFor="let t of targets" class="target-card" [class.t-selected]="isSelected(t.name)">
-        <div class="t-header">
-          <span class="t-name">{{ t.name }}</span>
-          <span class="t-source">{{ t.source }}</span>
-          <span *ngIf="isSelected(t.name)" class="t-sel-badge">SELECTED</span>
-        </div>
-        <div class="t-coords">
+  <!-- Saved Targets section -->
+  <div class="tgt-section-label" style="margin-top: 12px">Saved Targets</div>
+  <div class="saved-area">
+    <div class="saved-list">
+      <div *ngFor="let t of visibleTargets"
+           class="saved-row"
+           [class.saved-selected]="isSelected(t.name)"
+           (click)="selectTarget(t.name)">
+        <div class="saved-name">{{ t.name }}</div>
+        <div class="saved-coords">
           <span>{{ t.lat }}</span>
           <span>{{ t.lon }}</span>
-          <span>{{ t.alt }} ft [{{ t.altRef }}]</span>
+          <span>{{ t.alt }} [{{ t.altRef }}]</span>
         </div>
-        <div class="t-actions">
-          <button class="sms-btn small" [class.active]="isSelected(t.name)" (click)="selectTarget(t.name)">
-            {{ isSelected(t.name) ? 'Deselect' : 'Select' }}
-          </button>
-          <button class="sms-btn small" (click)="deleteTarget(t.name)">Delete</button>
-        </div>
+        <div class="saved-source">{{ t.source }}</div>
       </div>
-      <div *ngIf="selectedTarget" class="selected-summary">
-        <div class="summary-label">Active Target</div>
-        <div class="summary-row"><span>Name:</span><span>{{ selectedTarget.name }}</span></div>
-        <div class="summary-row"><span>Lat:</span><span>{{ selectedTarget.lat }}</span></div>
-        <div class="summary-row"><span>Lon:</span><span>{{ selectedTarget.lon }}</span></div>
-        <div class="summary-row"><span>Alt:</span><span>{{ selectedTarget.alt }} ft [{{ selectedTarget.altRef }}]</span></div>
-      </div>
-    </ng-container>
-
-    <ng-container *ngIf="activeTab === 'crosscued'">
-      <div class="no-selection">Cross-cued targeting requires an active TGP or SADL link.<br>No cross-cued targets available.</div>
-    </ng-container>
-
-    <ng-container *ngIf="activeTab === 'create'">
-      <div class="settings-form">
-        <div class="settings-group">
-          <div class="group-label">Target Info</div>
-          <div class="setting-row"><span>Name</span><input class="sms-input" [(ngModel)]="newTarget.name" placeholder="TARGET XX" /></div>
-          <div class="setting-row">
-            <span>Source</span>
-            <div class="btn-group">
-              <button class="sms-btn small" [class.active]="newTarget.source==='Manual'" (click)="newTarget.source='Manual'">Manual</button>
-              <button class="sms-btn small" [class.active]="newTarget.source==='Nav'"    (click)="newTarget.source='Nav'">Nav</button>
-              <button class="sms-btn small" [class.active]="newTarget.source==='TGP'"    (click)="newTarget.source='TGP'">TGP</button>
-            </div>
-          </div>
-        </div>
-        <div class="settings-group">
-          <div class="group-label">Coordinates</div>
-          <div class="setting-row"><span>Latitude</span><input class="sms-input" [(ngModel)]="newTarget.lat" placeholder="N 34 36 00.000" /></div>
-          <div class="setting-row"><span>Longitude</span><input class="sms-input" [(ngModel)]="newTarget.lon" placeholder="W 103 40 00.000" /></div>
-          <div class="setting-row">
-            <span>Altitude</span>
-            <input class="sms-input small" type="number" [(ngModel)]="newTarget.alt" />
-            <div class="btn-group">
-              <button class="sms-btn small" [class.active]="newTarget.altRef==='MSL'" (click)="newTarget.altRef='MSL'">MSL</button>
-              <button class="sms-btn small" [class.active]="newTarget.altRef==='AGL'" (click)="newTarget.altRef='AGL'">AGL</button>
-            </div>
-          </div>
-        </div>
-        <div class="create-actions">
-          <button class="sms-btn" (click)="createTarget()" [disabled]="!newTarget.name">Save Target</button>
-          <button class="sms-btn" (click)="activeTab='saved'">Cancel</button>
-        </div>
-      </div>
-    </ng-container>
+    </div>
+    <div class="scroll-btns">
+      <button class="sms-btn scroll-btn" (click)="scrollUp()" [disabled]="scrollOffset === 0">&#8679;</button>
+      <button class="sms-btn scroll-btn" (click)="scrollDown()" [disabled]="scrollOffset + pageSize >= targets.length">&#8681;</button>
+    </div>
   </div>
+
+  <!-- Bottom bar -->
+  <div class="tgt-footer">
+    <button class="sms-btn create-btn" (click)="showCreateForm = !showCreateForm">Create Target</button>
+  </div>
+
+  <!-- Create Target form (inline overlay) -->
+  <div class="create-form" *ngIf="showCreateForm">
+    <div class="create-form-inner">
+      <div class="create-title">Create Target</div>
+      <div class="cf-row"><span class="cf-label">Name</span><input class="sms-input" [(ngModel)]="newTarget.name" placeholder="TARGET XX" /></div>
+      <div class="cf-row"><span class="cf-label">Latitude</span><input class="sms-input" [(ngModel)]="newTarget.lat" placeholder="N 44 40 30.100" /></div>
+      <div class="cf-row"><span class="cf-label">Longitude</span><input class="sms-input" [(ngModel)]="newTarget.lon" placeholder="W 3 20 09.233" /></div>
+      <div class="cf-row">
+        <span class="cf-label">Altitude</span>
+        <input class="sms-input small" type="number" [(ngModel)]="newTarget.alt" />
+        <button class="sms-btn small" [class.active]="newTarget.altRef==='MSL'" (click)="newTarget.altRef='MSL'">MSL</button>
+        <button class="sms-btn small" [class.active]="newTarget.altRef==='AGL'" (click)="newTarget.altRef='AGL'">AGL</button>
+      </div>
+      <div class="cf-row">
+        <span class="cf-label">Source</span>
+        <button class="sms-btn small" [class.active]="newTarget.source==='Manual'" (click)="newTarget.source='Manual'">Manual</button>
+        <button class="sms-btn small" [class.active]="newTarget.source==='TGP'" (click)="newTarget.source='TGP'">TGP</button>
+        <button class="sms-btn small" [class.active]="newTarget.source==='SADL'" (click)="newTarget.source='SADL'">SADL</button>
+      </div>
+      <div class="cf-actions">
+        <button class="sms-btn" (click)="createTarget()" [disabled]="!newTarget.name">Save</button>
+        <button class="sms-btn" (click)="showCreateForm = false">Cancel</button>
+      </div>
+    </div>
+  </div>
+
 </div>

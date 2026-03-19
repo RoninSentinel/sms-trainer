@@ -11,10 +11,21 @@ import { SmsService, SavedTarget } from '../../../services/sms.service';
 export class SelectTargetComponent implements OnInit, OnDestroy {
   targets: SavedTarget[] = [];
   selectedTargetName = '';
-  activeTab: 'saved' | 'crosscued' | 'create' = 'saved';
+  showCreateForm = false;
+  scrollOffset = 0;
+  pageSize = 4;
   private subs: Subscription[] = [];
 
   newTarget: SavedTarget = { name: '', lat: '', lon: '', alt: '', altRef: 'MSL', source: 'Manual' };
+
+  crossCuedTarget: SavedTarget = {
+    name: 'CCTGP',
+    lat: "N 44\u00b040'30.100\"",
+    lon: "W 3\u00b020'09.233\"",
+    alt: '1,662',
+    altRef: 'MSL',
+    source: 'CCTGP',
+  };
 
   constructor(public sms: SmsService, private router: Router) {}
 
@@ -25,9 +36,21 @@ export class SelectTargetComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void { this.subs.forEach(s => s.unsubscribe()); }
 
+  get visibleTargets(): SavedTarget[] {
+    return this.targets.slice(this.scrollOffset, this.scrollOffset + this.pageSize);
+  }
+
+  scrollUp(): void { if (this.scrollOffset > 0) this.scrollOffset--; }
+  scrollDown(): void { if (this.scrollOffset + this.pageSize < this.targets.length) this.scrollOffset++; }
+
   selectTarget(name: string): void {
-    this.selectedTargetName = name;
-    this.sms.selectedTargetName$.next(name);
+    if (this.selectedTargetName === name) {
+      this.selectedTargetName = '';
+      this.sms.selectedTargetName$.next('');
+    } else {
+      this.selectedTargetName = name;
+      this.sms.selectedTargetName$.next(name);
+    }
   }
 
   isSelected(name: string): boolean { return this.selectedTargetName === name; }
@@ -36,13 +59,17 @@ export class SelectTargetComponent implements OnInit, OnDestroy {
     return this.targets.find(t => t.name === this.selectedTargetName);
   }
 
+  updateTarget(): void {
+    // Target Update - placeholder for sensor cue update logic
+  }
+
   createTarget(): void {
     if (!this.newTarget.name) return;
     const updated = [...this.targets, { ...this.newTarget }];
     this.sms.savedTargets$.next(updated);
     this.selectTarget(this.newTarget.name);
     this.newTarget = { name: '', lat: '', lon: '', alt: '', altRef: 'MSL', source: 'Manual' };
-    this.activeTab = 'saved';
+    this.showCreateForm = false;
   }
 
   deleteTarget(name: string): void {
