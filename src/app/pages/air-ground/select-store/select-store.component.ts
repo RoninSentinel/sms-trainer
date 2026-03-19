@@ -10,6 +10,7 @@ import { SmsService, Station, StoreType } from '../../../services/sms.service';
 })
 export class SelectStoreComponent implements OnInit, OnDestroy {
   stations: Station[] = [];
+  selectedType: StoreType | null = null;
   private subs: Subscription[] = [];
 
   storeRows: { type: StoreType; label: string; shortName: string; family: string }[] = [
@@ -24,6 +25,12 @@ export class SelectStoreComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.subs.push(this.sms.stations$.subscribe(s => { this.stations = s; }));
+    // restore selection from service if already set
+    const currentId = this.sms.selectedStationId$.value;
+    if (currentId !== null) {
+      const station = this.stations.find(s => s.id === currentId);
+      if (station) this.selectedType = station.storeType;
+    }
   }
 
   ngOnDestroy(): void { this.subs.forEach(s => s.unsubscribe()); }
@@ -33,19 +40,32 @@ export class SelectStoreComponent implements OnInit, OnDestroy {
     return this.storeRows.filter(r => types.has(r.type));
   }
 
-  isAnyStationAssigned(type: StoreType): boolean {
-    return this.stations.some(s => s.storeType === type && s.storePower);
+  isSelected(type: StoreType): boolean {
+    return this.selectedType === type;
   }
 
   isStorePowered(type: StoreType): boolean {
     return this.stations.some(s => s.storeType === type && s.storePower);
   }
 
-  assignStore(type: StoreType): void {
+  selectStore(type: StoreType): void {
+    if (this.selectedType === type) {
+      // Deselect
+      this.selectedType = null;
+      this.sms.selectedStationId$.next(null);
+    } else {
+      // Select this one, deselect all others
+      this.selectedType = type;
+      const station = this.stations.find(s => s.storeType === type);
+      if (station) this.sms.selectedStationId$.next(station.id);
+    }
+  }
+
+  setSingle(type: StoreType): void {
+    // Select single store without navigating away
+    this.selectedType = type;
     const station = this.stations.find(s => s.storeType === type);
-    if (!station) return;
-    this.sms.selectedStationId$.next(station.id);
-    this.router.navigate(['/air-ground/store-settings']);
+    if (station) this.sms.selectedStationId$.next(station.id);
   }
 
   togglePower(type: StoreType): void {

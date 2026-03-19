@@ -1,15 +1,28 @@
 <div class="title-bar">Air To Ground: Select Store</div>
 <div class="page-layout-full">
   <div class="store-list">
-    <div *ngFor="let s of getAvailableStores()" class="store-row" [class.store-selected]="isAnyStationAssigned(s.type)">
+    <div *ngFor="let s of getAvailableStores()"
+         class="store-row"
+         [class.store-selected]="isSelected(s.type)">
+
       <div class="store-icon">
         <span class="store-icon-text family-{{ s.family.toLowerCase() }}">{{ s.shortName }}</span>
       </div>
+
       <span class="store-name family-{{ s.family.toLowerCase() }}">{{ s.label }}</span>
+
       <div class="store-btns">
-        <button class="sms-btn ref" [class.active]="isAnyStationAssigned(s.type)" (click)="assignStore(s.type)">Select</button>
-        <button class="sms-btn ref">Single</button>
-        <button class="sms-btn ref guarded" [class.pwr-active]="isStorePowered(s.type)" (click)="togglePower(s.type)">Power Off</button>
+        <button class="sms-btn ref"
+                [class.active]="isSelected(s.type)"
+                (click)="selectStore(s.type)">
+          {{ isSelected(s.type) ? 'Deselect' : 'Select' }}
+        </button>
+        <button class="sms-btn ref" (click)="setSingle(s.type)">Single</button>
+        <button class="sms-btn ref guarded"
+                [class.pwr-active]="isStorePowered(s.type)"
+                (click)="togglePower(s.type)">
+          Power Off
+        </button>
       </div>
     </div>
   </div>
