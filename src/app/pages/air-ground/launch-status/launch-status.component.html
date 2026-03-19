@@ -1,54 +1,98 @@
 <div class="title-bar">Air To Ground: Launch Status</div>
-<div class="page-layout">
-  <div class="control-section">
-    <button class="sms-btn" (click)="back()">&#8592; Release Settings</button>
-    <button class="sms-btn" routerLink="/air-ground/select-store">&#8635; Start Over</button>
-  </div>
+<div class="page-layout-launch">
 
-  <div class="page-section">
+  <div class="launch-main">
+    <!-- Checklist -->
+    <div class="checklist">
+      <ng-container *ngIf="family === 'Hellfire'">
+        <div class="check-row" [class.check-ok]="isStorePowered">
+          <span class="check-led" [class.led-on]="isStorePowered"></span>
+          <span class="check-label">Store Powered</span>
+        </div>
+        <div class="check-row" [class.check-ok]="storeSettingsCorrect">
+          <span class="check-led" [class.led-on]="storeSettingsCorrect"></span>
+          <span class="check-label">Store Settings Correct</span>
+        </div>
+        <div class="check-row" [class.check-ok]="targetSelected">
+          <span class="check-led" [class.led-on]="targetSelected"></span>
+          <span class="check-label">Target Selected</span>
+        </div>
+        <div class="check-row" [class.check-ok]="true">
+          <span class="check-led led-on"></span>
+          <span class="check-label">Release Solution Valid</span>
+        </div>
+        <div class="check-row" [class.check-ok]="true">
+          <span class="check-led led-on"></span>
+          <span class="check-label">Master Arm On</span>
+        </div>
+        <div class="check-row" [class.check-ok]="readyForLaunch">
+          <span class="check-led" [class.led-on]="readyForLaunch"></span>
+          <span class="check-label">System Ready for Launch</span>
+        </div>
+      </ng-container>
 
-    <div class="target-summary" *ngIf="selectedTarget">
-      <div class="ts-label">Active Target</div>
-      <div class="ts-name">{{ selectedTarget.name }}</div>
-      <div class="ts-coords">{{ selectedTarget.lat }} / {{ selectedTarget.lon }}</div>
-      <div class="ts-alt">{{ selectedTarget.alt }} ft [{{ selectedTarget.altRef }}] &mdash; {{ selectedTarget.source }}</div>
+      <ng-container *ngIf="family === 'GBU' || family === 'JDAM'">
+        <div class="check-row" [class.check-ok]="storeSettingsCorrect">
+          <span class="check-led" [class.led-on]="storeSettingsCorrect"></span>
+          <span class="check-label">Store Settings Correct</span>
+        </div>
+        <div class="check-row" [class.check-ok]="targetSelected">
+          <span class="check-led" [class.led-on]="targetSelected"></span>
+          <span class="check-label">Target Selected</span>
+        </div>
+        <div class="check-row" [class.check-ok]="true">
+          <span class="check-led led-on"></span>
+          <span class="check-label">Release Settings Correct</span>
+        </div>
+        <div class="check-row" [class.check-ok]="true">
+          <span class="check-led led-on"></span>
+          <span class="check-label">Release Solution Valid</span>
+        </div>
+        <div class="check-row" [class.check-ok]="fuzeArmed">
+          <span class="check-led" [class.led-on]="fuzeArmed"></span>
+          <span class="check-label">Weapon Fuze Armed</span>
+        </div>
+        <div class="check-row" [class.check-ok]="true">
+          <span class="check-led led-on"></span>
+          <span class="check-label">Master Arm On</span>
+        </div>
+        <div class="check-row" [class.check-ok]="readyForLaunch">
+          <span class="check-led" [class.led-on]="readyForLaunch"></span>
+          <span class="check-label">Ready For Release</span>
+        </div>
+      </ng-container>
     </div>
-    <div *ngIf="!selectedTarget" class="warn-banner">
-      No target selected. Return to Select Target page.
-    </div>
 
-    <div class="launch-section-label">Station Status</div>
-    <table class="launch-table">
-      <thead>
-        <tr>
-          <th>Sta</th><th>Store</th><th>Family</th><th>Pwr</th><th>Status</th><th>Cue Mode</th><th>Ripple</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let st of stations" [class.armed-row]="st.storePower && st.storeType">
-          <td>{{ st.id }}</td>
-          <td>{{ st.storeType || '--' }}</td>
-          <td>
-            <span class="family-chip" [ngClass]="'fam-' + getFamily(st).toLowerCase()">
-              {{ getFamily(st) === 'Other' ? '--' : getFamily(st) }}
-            </span>
-          </td>
-          <td><span [class.pwr-on]="st.storePower">{{ st.storePower ? 'ON' : '--' }}</span></td>
-          <td><span class="status-chip" [ngClass]="getStatusClass(st.storeStatus)">{{ st.storeStatus || '--' }}</span></td>
-          <td>{{ st.storeType ? getRelease(st.id).cueMode : '--' }}</td>
-          <td>{{ st.storeType ? (getRelease(st.id).rippleCount + 'x @ ' + getRelease(st.id).rippleInterval + 's') : '--' }}</td>
-        </tr>
-      </tbody>
-    </table>
-
-    <div class="armed-summary" *ngIf="armedStations.length > 0">
-      <div class="as-label">Armed &amp; Powered: {{ armedStations.length }} station(s)</div>
-      <div *ngFor="let st of armedStations" class="as-row">
-        <span class="as-sta">Sta {{ st.id }}</span>
-        <span class="as-store">{{ st.storeType }}</span>
-        <span class="as-target">&#8594; {{ selectedTargetName || 'NO TARGET' }}</span>
+    <!-- PRF Code Match panel -->
+    <div class="prf-panel">
+      <div class="prf-header">
+        <span class="check-led led-on"></span>
+        <span class="prf-title">PRF Code Match</span>
+      </div>
+      <div class="prf-row"><span class="prf-label">MTS</span><span class="prf-val">{{ sms.mtsPrf }}</span></div>
+      <div class="prf-row" *ngFor="let st of armedStations">
+        <span class="prf-label">{{ st.label }}</span>
+        <span class="prf-val">{{ getPrf(st.id) }}</span>
       </div>
     </div>
-
   </div>
+
+  <!-- EOIR footer -->
+  <div class="eoir-bar">
+    <div class="eoir-coords">
+      <div class="eoir-source">EOIR</div>
+      <div>{{ sms.eoir.lat }}</div>
+      <div>{{ sms.eoir.lon }}</div>
+    </div>
+    <div class="eoir-alt">
+      <div>[EOIR]</div>
+      <div>{{ sms.eoir.alt }}</div>
+      <div>[{{ sms.eoir.altRef }}]</div>
+    </div>
+    <div class="eoir-btns">
+      <button class="sms-btn eoir-btn" [class.active]="autoUpdate" (click)="autoUpdate=true; manualUpdate=false">Auto<br>Update</button>
+      <button class="sms-btn eoir-btn" [class.active]="manualUpdate" (click)="manualUpdate=true; autoUpdate=false">Manual<br>Update</button>
+    </div>
+  </div>
+
 </div>

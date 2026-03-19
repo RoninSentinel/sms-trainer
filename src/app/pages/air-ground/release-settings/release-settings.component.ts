@@ -33,6 +33,28 @@ export class ReleaseSettingsComponent implements OnInit, OnDestroy {
     return this.sms.getStoreFamily(st.storeType);
   }
 
+  get canGoNext(): boolean {
+    if (this.selectedStationId === null) return false;
+    return this.sms.getNextStationId(this.selectedStationId) !== null;
+  }
+
+  get canGoPrev(): boolean {
+    if (this.selectedStationId === null) return false;
+    return this.sms.getPrevStationId(this.selectedStationId) !== null;
+  }
+
+  nextStation(): void {
+    if (this.selectedStationId === null) return;
+    const next = this.sms.getNextStationId(this.selectedStationId);
+    if (next !== null) { this.selectedStationId = next; this.sms.selectedStationId$.next(next); this.loadSettings(); }
+  }
+
+  prevStation(): void {
+    if (this.selectedStationId === null) return;
+    const prev = this.sms.getPrevStationId(this.selectedStationId);
+    if (prev !== null) { this.selectedStationId = prev; this.sms.selectedStationId$.next(prev); this.loadSettings(); }
+  }
+
   loadSettings(): void {
     if (this.selectedStationId === null) return;
     this.rel = { ...this.sms.getReleaseSettings(this.selectedStationId) };
@@ -47,6 +69,23 @@ export class ReleaseSettingsComponent implements OnInit, OnDestroy {
     this.selectedStationId = id;
     this.sms.selectedStationId$.next(id);
     this.loadSettings();
+  }
+
+  cycleRunInMode(): void {
+    this.rel.runInMode = this.rel.runInMode === 'Manual' ? 'Auto' : 'Manual';
+    this.save();
+  }
+
+  cycleWezMode(): void {
+    this.rel.wezMode = this.rel.wezMode === 'Manual' ? 'Auto' : 'Manual';
+    this.save();
+  }
+
+  cycleReleaseMode(): void {
+    const opts: ReleaseSettings['releaseMode'][] = ['CCIP', 'CCRP', 'MAN', 'DTOS'];
+    const i = opts.indexOf(this.rel.releaseMode);
+    this.rel.releaseMode = opts[(i + 1) % opts.length];
+    this.save();
   }
 
   getRippleTime(i: number): string {

@@ -40,7 +40,7 @@ export interface GbuSettings {
   offsetE: number;
   offsetD: number;
   fuzeArm: 'SAFE' | 'ARM';
-  fuzingType: 'INST' | 'DELAY' | 'PROX';
+  fuzingType: 'NOSE' | 'TAIL' | 'NOSE/TAIL';
   guidanceMode: 'LGB' | 'GPS' | 'INS';
 }
 
@@ -58,6 +58,8 @@ export interface JdamSettings {
 export interface HellfireSettings {
   laserCode: string;
   seekerMode: 'LOAL' | 'LOBL';
+  launchMode: 'LOAL-High' | 'LOAL-Low' | 'LOBL';
+  tmPower: boolean;
   laserSpotTracker: boolean;
   warheadType: 'K-HEAT' | 'BLAST-FRAG' | 'THERMOBARIC';
   rocketMotor: 'AGM-114K' | 'AGM-114R' | 'AGM-114N';
@@ -70,6 +72,14 @@ export interface ReleaseSettings {
   releaseOrder: string[];
   cueMode: 'LAR' | 'CCIP' | 'CCRP' | 'MAN';
   targetType: 'Stationary' | 'Moving';
+  runInMode: 'Manual' | 'Auto';
+  runInCourse: number;
+  wezMode: 'Manual' | 'Auto';
+  rtiAzimuth: number;
+  releaseDistMin: number;
+  releaseDistDesired: number;
+  releaseDistMax: number;
+  releaseMode: 'CCIP' | 'CCRP' | 'MAN' | 'DTOS';
 }
 
 export interface SavedTarget {
@@ -127,10 +137,13 @@ export class SmsService {
 
   selectedTargetName$ = new BehaviorSubject<string>('TARGET 01');
 
+  eoir = { lat: "N 44° 40' 30.975\"", lon: "W 2° 37' 20.10\"", alt: 1000, altRef: 'MSL' };
+  mtsPrf = '1122';
+
   defaultGbu(): GbuSettings {
-    return { prf: '1688', laserReceiver: true, impactAngle: 65,
+    return { prf: '1511', laserReceiver: true, impactAngle: 65,
              offsetN: 0, offsetE: 0, offsetD: 0, fuzeArm: 'SAFE',
-             fuzingType: 'INST', guidanceMode: 'LGB' };
+             fuzingType: 'NOSE/TAIL', guidanceMode: 'LGB' };
   }
 
   defaultJdam(): JdamSettings {
@@ -140,14 +153,19 @@ export class SmsService {
   }
 
   defaultHellfire(): HellfireSettings {
-    return { laserCode: '1688', seekerMode: 'LOBL', laserSpotTracker: true,
+    return { laserCode: '1122', seekerMode: 'LOBL', launchMode: 'LOAL-High',
+             tmPower: false, laserSpotTracker: true,
              warheadType: 'K-HEAT', rocketMotor: 'AGM-114K', salvoPulse: 1 };
   }
 
   defaultRelease(): ReleaseSettings {
     return { rippleCount: 1, rippleInterval: 0.32,
              releaseOrder: ['Store 2-1', 'Store 6-1', 'Store 2-2', 'Store 6-2'],
-             cueMode: 'LAR', targetType: 'Stationary' };
+             cueMode: 'LAR', targetType: 'Stationary',
+             runInMode: 'Manual', runInCourse: 0,
+             wezMode: 'Manual', rtiAzimuth: 0,
+             releaseDistMin: 0, releaseDistDesired: 0, releaseDistMax: 0,
+             releaseMode: 'CCRP' };
   }
 
   getGbuSettings(stationId: number): GbuSettings {
@@ -205,5 +223,25 @@ export class SmsService {
       case 'JET': case 'JETTED': case 'AUR': case 'IBIT': case 'WARMUP': return 'status-green';
       default: return 'status-black';
     }
+  }
+
+  getArmedStations(): Station[] {
+    return this.stations$.value.filter(s => s.storeType && s.storePower);
+  }
+
+  getStationIndex(stationId: number): number {
+    return this.stations$.value.findIndex(s => s.id === stationId);
+  }
+
+  getNextStationId(stationId: number): number | null {
+    const stations = this.stations$.value;
+    const idx = stations.findIndex(s => s.id === stationId);
+    return idx < stations.length - 1 ? stations[idx + 1].id : null;
+  }
+
+  getPrevStationId(stationId: number): number | null {
+    const stations = this.stations$.value;
+    const idx = stations.findIndex(s => s.id === stationId);
+    return idx > 0 ? stations[idx - 1].id : null;
   }
 }

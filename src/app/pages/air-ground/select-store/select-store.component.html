@@ -1,48 +1,16 @@
 <div class="title-bar">Air To Ground: Select Store</div>
-<div class="page-section">
-  <div class="action-row">
-    <button class="sms-btn" (click)="setPower(true)"  [disabled]="!selectedStation?.storeType">Pwr On</button>
-    <button class="sms-btn guarded" (click)="setPower(false)" [disabled]="!selectedStation?.storeType">Pwr Off</button>
-  </div>
-
-  <div class="station-row-btns">
-    <button *ngFor="let st of stations"
-            class="sms-btn"
-            [class.active]="selectedStationId === st.id"
-            (click)="selectStation(st.id)">
-      Sta {{ st.id }}
-      <span *ngIf="st.storeType" class="sta-type-badge">{{ st.storeType }}</span>
-    </button>
-  </div>
-
-  <div *ngIf="selectedStationId === null" class="no-selection">Select a station above to assign a store.</div>
-
-  <ng-container *ngIf="selectedStationId !== null">
-    <div *ngIf="selectedStation?.storeType" class="current-assignment">
-      <span class="assign-label">Current:</span>
-      <span class="assign-value">{{ selectedStation?.storeType }}</span>
-      <span class="assign-family family-{{ selectedFamily.toLowerCase() }}">{{ selectedFamily }}</span>
-      <span class="assign-pwr" [class.pwr-on]="selectedStation?.storePower">
-        {{ selectedStation?.storePower ? '● PWR ON' : '○ PWR OFF' }}
-      </span>
-    </div>
-
-    <div class="store-section-label">Air-To-Ground Stores</div>
-
-    <ng-container *ngFor="let family of ['GBU','JDAM','Hellfire']">
-      <div class="store-family-group">
-        <div class="family-header family-{{ family.toLowerCase() }}">{{ family }}</div>
-        <ng-container *ngFor="let s of storeRows">
-          <div *ngIf="s.family === family" class="store-row" [class.store-active]="isStationSelected(s.type)">
-            <span class="store-label">{{ s.label }}</span>
-            <div class="store-actions">
-              <button class="sms-btn small" [class.active]="isStationSelected(s.type)" (click)="assignStore(s.type)">
-                {{ isStationSelected(s.type) ? 'Selected' : 'Select' }}
-              </button>
-            </div>
-          </div>
-        </ng-container>
+<div class="page-layout-full">
+  <div class="store-list">
+    <div *ngFor="let s of getAvailableStores()" class="store-row" [class.store-selected]="isAnyStationAssigned(s.type)">
+      <div class="store-icon">
+        <span class="store-icon-text family-{{ s.family.toLowerCase() }}">{{ s.shortName }}</span>
       </div>
-    </ng-container>
-  </ng-container>
+      <span class="store-name family-{{ s.family.toLowerCase() }}">{{ s.label }}</span>
+      <div class="store-btns">
+        <button class="sms-btn ref" [class.active]="isAnyStationAssigned(s.type)" (click)="assignStore(s.type)">Select</button>
+        <button class="sms-btn ref">Single</button>
+        <button class="sms-btn ref guarded" [class.pwr-active]="isStorePowered(s.type)" (click)="togglePower(s.type)">Power Off</button>
+      </div>
+    </div>
+  </div>
 </div>

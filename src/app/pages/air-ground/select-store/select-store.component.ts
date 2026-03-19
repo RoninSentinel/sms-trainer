@@ -10,61 +10,47 @@ import { SmsService, Station, StoreType } from '../../../services/sms.service';
 })
 export class SelectStoreComponent implements OnInit, OnDestroy {
   stations: Station[] = [];
-  selectedStationId: number | null = null;
   private subs: Subscription[] = [];
 
-  storeRows: { type: StoreType; label: string; family: string }[] = [
-    { type: 'GBU12',    label: 'GBU-12 (LGB)',     family: 'GBU' },
-    { type: 'GBU49',    label: 'GBU-49 (LGB/GPS)', family: 'GBU' },
-    { type: 'GBU48',    label: 'GBU-48 (LGB/GPS)', family: 'GBU' },
-    { type: 'JDAM',     label: 'GBU-38 JDAM',      family: 'JDAM' },
-    { type: 'Hellfire', label: 'AGM-114 Hellfire',  family: 'Hellfire' },
+  storeRows: { type: StoreType; label: string; shortName: string; family: string }[] = [
+    { type: 'GBU12',    label: 'GBU-12 Paveway II',  shortName: 'GB12', family: 'GBU' },
+    { type: 'GBU49',    label: 'GBU-49 Enhanced PW', shortName: 'GB49', family: 'GBU' },
+    { type: 'GBU48',    label: 'GBU-48 Hybrid',      shortName: 'GB48', family: 'GBU' },
+    { type: 'JDAM',     label: 'GBU-38 JDAM',        shortName: 'JD38', family: 'JDAM' },
+    { type: 'Hellfire', label: 'AGM-114 Hellfire',   shortName: 'HF-P', family: 'Hellfire' },
   ];
 
   constructor(public sms: SmsService, private router: Router) {}
 
   ngOnInit(): void {
     this.subs.push(this.sms.stations$.subscribe(s => { this.stations = s; }));
-    this.subs.push(this.sms.selectedStationId$.subscribe(id => { this.selectedStationId = id; }));
   }
 
   ngOnDestroy(): void { this.subs.forEach(s => s.unsubscribe()); }
 
-  selectStation(id: number): void {
-    this.selectedStationId = id;
-    this.sms.selectedStationId$.next(id);
+  getAvailableStores() {
+    const types = new Set(this.stations.map(s => s.storeType).filter(t => !!t));
+    return this.storeRows.filter(r => types.has(r.type));
   }
 
-  get selectedStation(): Station | undefined {
-    return this.stations.find(s => s.id === this.selectedStationId);
+  isAnyStationAssigned(type: StoreType): boolean {
+    return this.stations.some(s => s.storeType === type && s.storePower);
   }
 
-  get selectedFamily(): string {
-    const st = this.selectedStation;
-    if (!st || !st.storeType) return '';
-    return this.sms.getStoreFamily(st.storeType);
-  }
-
-  isStationSelected(type: StoreType): boolean {
-    return this.selectedStation?.storeType === type;
+  isStorePowered(type: StoreType): boolean {
+    return this.stations.some(s => s.storeType === type && s.storePower);
   }
 
   assignStore(type: StoreType): void {
-    if (this.selectedStationId === null) return;
-    const id = this.selectedStationId;
-    const updated = this.stations.map(s =>
-      s.id === id ? { ...s, storeType: type, storeStatus: 'IDLE' as any } : s
-    );
-    this.sms.stations$.next(updated);
-    this.sms.selectedStationId$.next(id);
+    const station = this.stations.find(s => s.storeType === type);
+    if (!station) return;
+    this.sms.selectedStationId$.next(station.id);
     this.router.navigate(['/air-ground/store-settings']);
   }
 
-  setPower(on: boolean): void {
-    if (this.selectedStationId === null) return;
-    const id = this.selectedStationId;
+  togglePower(type: StoreType): void {
     const updated = this.stations.map(s =>
-      s.id === id ? { ...s, storePower: on } : s
+      s.storeType === type ? { ...s, storePower: !s.storePower } : s
     );
     this.sms.stations$.next(updated);
   }

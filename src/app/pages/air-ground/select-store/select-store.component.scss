@@ -1,24 +1,63 @@
-.current-assignment {
-  display: flex; align-items: center; gap: 10px;
-  background: #0d1a0d; border: 1px solid #2a3a2a;
-  padding: 7px 10px; margin-bottom: 10px; font-size: 11px;
+.page-layout-full {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 10px;
+  gap: 6px;
+  overflow-y: auto;
 }
-.assign-label { color: #888; }
-.assign-value { font-weight: bold; color: #e0e0e0; }
-.assign-family { padding: 2px 6px; font-size: 10px; font-weight: bold; }
-.family-gbu      { background: #003344; color: #00bcd4; }
-.family-jdam     { background: #2a1a00; color: #ff9800; }
-.family-hellfire { background: #1a0000; color: #f44336; }
-.assign-pwr { margin-left: auto; font-size: 10px; color: #555; }
-.assign-pwr.pwr-on { color: #4caf50; }
-.store-section-label { font-size: 10px; color: #888; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
-.store-family-group { margin-bottom: 10px; border: 1px solid #222; }
-.family-header { padding: 4px 8px; font-size: 10px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; }
+
+.store-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
 .store-row {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 7px 10px; border-top: 1px solid #1a1a1a;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border: 1px solid #333;
+  background: #1a1a1a;
+  border-radius: 2px;
+  &.store-selected { border-color: #00bcd4; background: #001e26; }
 }
-.store-row.store-active { background: #001a22; }
-.store-label { font-size: 11px; flex: 1; }
-.store-actions { display: flex; gap: 5px; }
-.sta-type-badge { display: block; font-size: 8px; color: #888; margin-top: 1px; }
+
+.store-icon {
+  width: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.store-icon-text {
+  font-size: 11px;
+  font-weight: bold;
+  font-family: 'Courier New', monospace;
+}
+
+.store-name {
+  flex: 1;
+  font-size: 13px;
+  font-weight: bold;
+  font-family: 'Courier New', monospace;
+}
+
+.store-btns {
+  display: flex;
+  gap: 6px;
+}
+
+.sms-btn.ref {
+  min-width: 80px;
+  padding: 6px 10px;
+  font-size: 12px;
+}
+
+.sms-btn.guarded { border-color: #8b4513; color: #cd853f; }
+.sms-btn.guarded.pwr-active { background: #8b4513; color: #fff; border-color: #cd5c5c; }
+
+.family-gbu      { color: #7ecfff; }
+.family-jdam     { color: #ffe082; }
+.family-hellfire { color: #ff8a65; }

@@ -36,10 +36,39 @@ export class StoreSettingsComponent implements OnInit, OnDestroy {
     return this.sms.getStoreFamily(st.storeType);
   }
 
-  get titleBar(): string {
-    return this.selectedStation
-      ? 'Store Settings: Sta ' + this.selectedStationId + ' (' + this.selectedStation.storeType + ')'
-      : 'Store Settings';
+  get canGoNext(): boolean {
+    if (this.selectedStationId === null) return false;
+    return this.sms.getNextStationId(this.selectedStationId) !== null;
+  }
+
+  get canGoPrev(): boolean {
+    if (this.selectedStationId === null) return false;
+    return this.sms.getPrevStationId(this.selectedStationId) !== null;
+  }
+
+  get storeIndex(): number {
+    if (this.selectedStationId === null) return 0;
+    return this.sms.getStationIndex(this.selectedStationId) + 1;
+  }
+
+  get segInfo(): string | null {
+    const total = this.stations.filter(s => s.storeType === this.selectedStation?.storeType).length;
+    if (total <= 1) return null;
+    const idx = this.stations.filter(s => s.storeType === this.selectedStation?.storeType)
+      .findIndex(s => s.id === this.selectedStationId) + 1;
+    return idx + '/' + total;
+  }
+
+  nextStation(): void {
+    if (this.selectedStationId === null) return;
+    const next = this.sms.getNextStationId(this.selectedStationId);
+    if (next !== null) { this.selectedStationId = next; this.sms.selectedStationId$.next(next); this.loadSettings(); }
+  }
+
+  prevStation(): void {
+    if (this.selectedStationId === null) return;
+    const prev = this.sms.getPrevStationId(this.selectedStationId);
+    if (prev !== null) { this.selectedStationId = prev; this.sms.selectedStationId$.next(prev); this.loadSettings(); }
   }
 
   selectStation(id: number): void {
@@ -56,23 +85,26 @@ export class StoreSettingsComponent implements OnInit, OnDestroy {
     this.hf   = { ...this.sms.getHellfireSettings(id) };
   }
 
-  saveGbu(): void {
-    if (this.selectedStationId === null) return;
-    this.sms.setGbuSettings(this.selectedStationId, { ...this.gbu });
-  }
-
-  saveJdam(): void {
-    if (this.selectedStationId === null) return;
-    this.sms.setJdamSettings(this.selectedStationId, { ...this.jdam });
-  }
-
-  saveHf(): void {
-    if (this.selectedStationId === null) return;
-    this.sms.setHellfireSettings(this.selectedStationId, { ...this.hf });
-  }
+  saveGbu(): void { if (this.selectedStationId !== null) this.sms.setGbuSettings(this.selectedStationId, { ...this.gbu }); }
+  saveJdam(): void { if (this.selectedStationId !== null) this.sms.setJdamSettings(this.selectedStationId, { ...this.jdam }); }
+  saveHf(): void { if (this.selectedStationId !== null) this.sms.setHellfireSettings(this.selectedStationId, { ...this.hf }); }
 
   back(): void { this.router.navigate(['/air-ground/select-store']); }
   next(): void { this.router.navigate(['/air-ground/select-target']); }
+
+  cycleGbuFuzing(): void {
+    const opts: GbuSettings['fuzingType'][] = ['NOSE', 'TAIL', 'NOSE/TAIL'];
+    const i = opts.indexOf(this.gbu.fuzingType);
+    this.gbu.fuzingType = opts[(i + 1) % opts.length];
+    this.saveGbu();
+  }
+
+  cycleHfLaunchMode(): void {
+    const opts: HellfireSettings['launchMode'][] = ['LOAL-High', 'LOAL-Low', 'LOBL'];
+    const i = opts.indexOf(this.hf.launchMode);
+    this.hf.launchMode = opts[(i + 1) % opts.length];
+    this.saveHf();
+  }
 
   toggleGbuFuze(): void { this.gbu.fuzeArm = this.gbu.fuzeArm === 'SAFE' ? 'ARM' : 'SAFE'; this.saveGbu(); }
   toggleJdamFuze(): void { this.jdam.fuzeArm = this.jdam.fuzeArm === 'SAFE' ? 'ARM' : 'SAFE'; this.saveJdam(); }
@@ -82,16 +114,7 @@ export class StoreSettingsComponent implements OnInit, OnDestroy {
     this.jdam.fuzingType = opts[(i+1)%opts.length];
     this.saveJdam();
   }
-  cycleGbuFuzing(): void {
-    const opts: GbuSettings['fuzingType'][] = ['INST','DELAY','PROX'];
-    const i = opts.indexOf(this.gbu.fuzingType);
-    this.gbu.fuzingType = opts[(i+1)%opts.length];
-    this.saveGbu();
-  }
-  cycleHfSeeker(): void {
-    this.hf.seekerMode = this.hf.seekerMode === 'LOBL' ? 'LOAL' : 'LOBL';
-    this.saveHf();
-  }
+  cycleHfSeeker(): void { this.hf.seekerMode = this.hf.seekerMode === 'LOBL' ? 'LOAL' : 'LOBL'; this.saveHf(); }
   cycleHfWarhead(): void {
     const opts: HellfireSettings['warheadType'][] = ['K-HEAT','BLAST-FRAG','THERMOBARIC'];
     const i = opts.indexOf(this.hf.warheadType);
