@@ -303,6 +303,52 @@ const DEFAULT_WARNINGS: { level: 'WARNING' | 'CAUTION'; msg: string }[] = [
 ];
 
 /* ═══════════════════════════════════════════════════════════════════════════
+   HELPERS
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/**
+ * buildReleaseOrder
+ * Builds the interleaved Hellfire release-order list from a stations array.
+ *
+ * The real GSMS alternates fire across launchers by position index:
+ *   position 1 of each launcher fires first (left-to-right across stations),
+ *   then position 2, then position 3 (M299 only), then position 4 (M299 only).
+ *
+ * Example — two M310 stations (2 rails each):
+ *   ['Store 2-1', 'Store 6-1', 'Store 2-2', 'Store 6-2']
+ *
+ * Example — two M299 stations (4 rails each):
+ *   ['Store 2-1', 'Store 6-1', 'Store 2-2', 'Store 6-2',
+ *    'Store 2-3', 'Store 6-3', 'Store 2-4', 'Store 6-4']
+ *
+ * Example — one M299 (station 2) + one M310 (station 6):
+ *   ['Store 2-1', 'Store 6-1', 'Store 2-2', 'Store 6-2',
+ *    'Store 2-3', 'Store 2-4']
+ */
+function buildReleaseOrder(stations: Station[]): string[] {
+  // Collect only Hellfire stations that have substations, sorted by id.
+  const hellfireStations = stations
+    .filter((s) => s.storeType === 'Hellfire' && s.substations && s.substations.length > 0)
+    .sort((a, b) => a.id - b.id);
+
+  if (hellfireStations.length === 0) return [];
+
+  // Find the maximum rail count across all Hellfire stations.
+  const maxRails = Math.max(...hellfireStations.map((s) => s.substations!.length));
+
+  const order: string[] = [];
+  for (let pos = 0; pos < maxRails; pos++) {
+    for (const station of hellfireStations) {
+      const sub = station.substations![pos];
+      if (sub) {
+        order.push(`Store ${sub.id}`);
+      }
+    }
+  }
+  return order;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
    SERVICE IMPLEMENTATION
    ═══════════════════════════════════════════════════════════════════════════ */
 
@@ -589,8 +635,14 @@ export class SmsService {
    * defaultRelease
    * Returns a fresh ReleaseSettings object with factory-default values.
    * Default ripple interval is 0.32s per the documentation.
+   *
+   * The releaseOrder is built dynamically from the current stations signal
+   * so it always reflects the actual launcher configuration (M310 = 2 rails,
+   * M299 = 4 rails).  An optional `stations` array can be passed when calling
+   * this before the signal is updated (e.g. inside setStationStoreType).
    */
-  defaultRelease(): ReleaseSettings {
+  defaultRelease(stations?: Station[]): ReleaseSettings {
+    const stationList = stations ?? this.stations();
     return {
       //Run-In settings
       runInMode: 'Track',
@@ -599,7 +651,7 @@ export class SmsService {
       isCourseDisabled: true,
       rippleCount: 1,
       rippleInterval: 0.32,
-      releaseOrder: ['Store 2-1', 'Store 6-1', 'Store 2-2', 'Store 6-2'],
+      releaseOrder: buildReleaseOrder(stationList),
       targetType: 'Stationary',
       wezMode: 'WEZ',
       rtiAzimuth: 0,
@@ -688,6 +740,9 @@ export class SmsService {
    * - Hellfire + M310 → 2 substation positions (X-1, X-2)
    * - Hellfire + M299 → 4 substation positions (X-1, X-2, X-3, X-4)
    * - Any other type  → removes substations (single-store rack)
+   *
+   * After updating the stations signal, all Hellfire station release settings
+   * have their releaseOrder regenerated to match the new rail configuration.
    */
   setStationStoreType(stationId: number, type: StoreType, isTrainer = false, launcher: LauncherType = 'M310'): void {
     this.stations.update((stations) =>
@@ -727,6 +782,42 @@ export class SmsService {
         }
       }),
     );
+
+    // ── Rebuild releaseOrder for all Hellfire stations ──────────────────
+    // Now that stations signal is updated, regenerate the interleaved
+    // release order so every Hellfire station's settings reflect the
+    // current rail counts (2 for M310, 4 for M299).
+    this.rebuildReleaseOrderForHellfireStations();
+  }
+
+  /**
+   * rebuildReleaseOrderForHellfireStations
+   * Iterates all Hellfire stations and updates their releaseOrder in
+   * releaseSettings to match the current substation configuration.
+   * Called automatically by setStationStoreType after the stations
+   * signal is updated.
+   */
+  private rebuildReleaseOrderForHellfireStations(): void {
+    const currentStations = this.stations();
+    const newOrder = buildReleaseOrder(currentStations);
+
+    const hellfireStationIds = currentStations
+      .filter((s) => s.storeType === 'Hellfire')
+      .map((s) => s.id);
+
+    if (hellfireStationIds.length === 0) return;
+
+    this.releaseSettings.update((map) => {
+      const updated = { ...map };
+      for (const id of hellfireStationIds) {
+        if (updated[id]) {
+          updated[id] = { ...updated[id], releaseOrder: newOrder };
+        }
+        // If no settings exist yet, defaultRelease() will build the
+        // correct order on first access via getReleaseSettings().
+      }
+      return updated;
+    });
   }
 
   // ── Utility Methods ────────────────────────────────────────────────────────
