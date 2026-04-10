@@ -1,6 +1,6 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { NgClass } from '@angular/common';
-import { SmsService, Station, StoreType, StoreStatus } from '../../services/sms.service';
+import { SmsService, Station, StoreType, StoreStatus, LauncherType } from '../../services/sms.service';
 
 @Component({
   selector: 'app-inventory-page',
@@ -16,18 +16,18 @@ export class InventoryPageComponent {
   readonly selectedStationId = signal<number | null>(null);
   readonly verifyState = signal<'idle' | 'in-progress' | 'done'>('idle');
 
-  storeTypeOptions: { label: string; value: StoreType; trainer: boolean }[] = [
-    { label: 'GBU12 Legacy', value: 'GBU12', trainer: false },
-    { label: 'GBU49 Legacy', value: 'GBU49', trainer: false },
-    { label: 'GBU38 Legacy', value: 'GBU38', trainer: false },
-    { label: 'GBU12T Legacy', value: 'GBU12', trainer: true },
-    { label: 'GBU49T Legacy', value: 'GBU49', trainer: true },
-    { label: 'GBU38T Legacy', value: 'GBU38', trainer: true },
-    { label: 'M310\nDual HF', value: 'Hellfire', trainer: false },
-    { label: 'M310T HF Trn', value: 'Hellfire', trainer: true },
-    { label: 'M299 Quad HF', value: 'Hellfire', trainer: false },
-    { label: 'M299T HF Trn', value: 'Hellfire', trainer: true },
-    { label: 'GBU54', value: 'GBU54', trainer: false },
+  storeTypeOptions: { label: string; value: StoreType; trainer: boolean; launcher?: LauncherType }[] = [
+    { label: 'GBU12 Legacy',  value: 'GBU12',    trainer: false },
+    { label: 'GBU49 Legacy',  value: 'GBU49',    trainer: false },
+    { label: 'GBU38 Legacy',  value: 'GBU38',    trainer: false },
+    { label: 'GBU12T Legacy', value: 'GBU12',    trainer: true  },
+    { label: 'GBU49T Legacy', value: 'GBU49',    trainer: true  },
+    { label: 'GBU38T Legacy', value: 'GBU38',    trainer: true  },
+    { label: 'M310\nDual HF', value: 'Hellfire', trainer: false, launcher: 'M310' },
+    { label: 'M310T HF Trn',  value: 'Hellfire', trainer: true,  launcher: 'M310' },
+    { label: 'M299\nQuad HF', value: 'Hellfire', trainer: false, launcher: 'M299' },
+    { label: 'M299T HF Trn',  value: 'Hellfire', trainer: true,  launcher: 'M299' },
+    { label: 'GBU54',         value: 'GBU54',    trainer: false },
   ];
 
   protected readonly selectedStation = computed<Station | undefined>(() => {
@@ -49,12 +49,14 @@ export class InventoryPageComponent {
     this.sms.selectedStationId.set(id);
   }
 
-  assignStore(type: StoreType, trainer: boolean): void {
+  assignStore(type: StoreType, trainer: boolean, launcher?: LauncherType): void {
     const id = this.selectedStationId();
     if (id === null) return;
     const station = this.stations().find((s) => s.id === id);
     if (!station?.loadable) return;
-    this.sms.setStationStoreType(id, type, trainer);
+    // For Hellfire, pass the launcher type (defaults to M310 if not specified)
+    const resolvedLauncher: LauncherType = type === 'Hellfire' ? (launcher ?? 'M310') : 'M310';
+    this.sms.setStationStoreType(id, type, trainer, resolvedLauncher);
     this.sms.stations.update((list) =>
       list.map((s) => {
         if (s.id !== id) return s;

@@ -48,7 +48,7 @@
             <button
               class="sms-btn store-type-btn"
               [class.trainer-btn]="opt.trainer"
-              (click)="assignStore(opt.value, opt.trainer)">
+              (click)="assignStore(opt.value, opt.trainer, opt.launcher)">
               @if (opt.trainer) {
                 <span class="trainer-label">TRAINER</span>
               }
@@ -76,6 +76,12 @@
             <div class="detail-row">
               <span class="detail-label">Launcher:</span>
               <span>{{ st.launcher }}</span>
+            </div>
+          }
+          @if (st.substations && st.substations.length > 0) {
+            <div class="detail-row">
+              <span class="detail-label">Rails:</span>
+              <span>{{ st.substations.length }} ({{ st.substations.map(s => s.id).join(', ') }})</span>
             </div>
           }
         </div>

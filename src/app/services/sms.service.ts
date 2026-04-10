@@ -69,8 +69,16 @@ export type StoreStatus =
 export type StoreType = 'GBU12' | 'GBU38' | 'GBU49' | 'GBU54' | 'GBU48' | 'Hellfire' | 'M36' | 'AWM' | '';
 
 /**
+ * LauncherType — the physical launcher rack mounted on a station.
+ *   M310 — dual-rail (2 Hellfire positions)
+ *   M299 — quad-rail (4 Hellfire positions)
+ */
+export type LauncherType = 'M310' | 'M299';
+
+/**
  * SubStation — represents a single munition position on a multi-store
- * launcher (e.g. position 2-1 or 2-2 on a Hellfire M310 rack).
+ * launcher (e.g. position 2-1 or 2-2 on a Hellfire M310 rack, or
+ * 2-1 through 2-4 on an M299 quad-rail).
  */
 export interface SubStation {
   id: string;
@@ -94,7 +102,7 @@ export interface Station {
   storePower: boolean;
   selected: boolean;
   substations?: SubStation[];
-  launcher?: string;
+  launcher?: LauncherType;
   isTrainer?: boolean;
 }
 
@@ -677,42 +685,44 @@ export class SmsService {
   /**
    * setStationStoreType
    * Updates a station's storeType and synchronizes the substations array:
-   * - Hellfire → adds/restores two substation positions (X-1, X-2)
-   * - Any other type → removes substations (single-store rack)
+   * - Hellfire + M310 → 2 substation positions (X-1, X-2)
+   * - Hellfire + M299 → 4 substation positions (X-1, X-2, X-3, X-4)
+   * - Any other type  → removes substations (single-store rack)
    */
-  setStationStoreType(stationId: number, type: StoreType, isTrainer = false): void {
+  setStationStoreType(stationId: number, type: StoreType, isTrainer = false, launcher: LauncherType = 'M310'): void {
     this.stations.update((stations) =>
       stations.map((st) => {
         if (st.id !== stationId) return st;
 
         if (type === 'Hellfire') {
+          const subCount = launcher === 'M299' ? 4 : 2;
+
+          // Reuse existing substations if count matches, otherwise rebuild
+          const existingSubs = st.substations ?? [];
+          const substations: SubStation[] = Array.from({ length: subCount }, (_, i) => {
+            const pos = i + 1;
+            const existing = existingSubs[i];
+            return existing
+              ? { ...existing, storeType: type }
+              : {
+                  id: `${stationId}-${pos}`,
+                  storeType: type,
+                  storeStatus: 'IDLE' as StoreStatus,
+                  storePower: false,
+                  selected: false,
+                };
+          });
+
           return {
             ...st,
             storeType: type,
             isTrainer,
-            launcher: 'M310',
-            substations: st.substations?.length
-              ? st.substations.map((sub) => ({ ...sub, storeType: type }))
-              : [
-                  {
-                    id: `${stationId}-1`,
-                    storeType: type,
-                    storeStatus: 'IDLE' as StoreStatus,
-                    storePower: false,
-                    selected: false,
-                  },
-                  {
-                    id: `${stationId}-2`,
-                    storeType: type,
-                    storeStatus: 'IDLE' as StoreStatus,
-                    storePower: false,
-                    selected: false,
-                  },
-                ],
+            launcher,
+            substations,
           };
         } else {
           // GBU / empty — no substation rack
-          const { substations:  _substations, launcher: _launcher, ...rest } = st;
+          const { substations: _substations, launcher: _launcher, ...rest } = st;
           return { ...rest, storeType: type, isTrainer };
         }
       }),
