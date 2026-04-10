@@ -1,24 +1,24 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
-import { Subscription } from 'rxjs';
-import { SmsService, Station } from '../../services/sms.service';
+import { Component, inject } from '@angular/core';
+import { NgClass } from '@angular/common';
+import { SmsService, StoreStatus } from '../../services/sms.service';
 
 @Component({
   selector: 'app-status-page',
+  standalone: true,
+  imports: [NgClass],
   templateUrl: './status.component.html',
   styleUrls: ['./status.component.scss'],
 })
-export class StatusPageComponent implements OnInit, OnDestroy {
-  stations: Station[] = [];
-  warnings: { level: string; msg: string }[] = [];
-  activeView = 'summary';
-  private subs: Subscription[] = [];
+export class StatusPageComponent {
+  protected readonly sms = inject(SmsService);
 
-  constructor(public sms: SmsService) {}
-  ngOnInit(): void {
-    this.subs.push(this.sms.stations$.subscribe(s => { this.stations = s; }));
-    this.subs.push(this.sms.warnings$.subscribe(w => { this.warnings = w; }));
+  protected readonly stations = this.sms.stations;
+  protected readonly warnings = this.sms.warnings;
+  protected readonly warningCount = this.sms.warningCount;
+
+  activeView = 'summary';
+
+  getStatusClass(s: StoreStatus): string {
+    return this.sms.getStatusClass(s);
   }
-  ngOnDestroy(): void { this.subs.forEach(s => s.unsubscribe()); }
-  getStatusClass(s: string): string { return this.sms.getStatusClass(s as any); }
-  get warningCount(): number { return this.warnings.length; }
 }

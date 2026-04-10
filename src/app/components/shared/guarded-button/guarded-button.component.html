@@ -1,0 +1,28 @@
+<div class="guard-container" [class.guard-disabled]="disabled">
+  <!-- The actual button underneath -->
+  <button
+    class="guard-btn"
+    [class.guard-btn-active]="active"
+    [disabled]="disabled || !armed()"
+    (click)="onButtonClick()"
+    (keydown.enter)="onButtonClick()"
+    tabindex="0"
+  >
+    {{ label }}
+  </button>
+
+  <!-- Protective curtain overlay -->
+  @if (!disabled) {
+    <div
+      class="guard-curtain"
+      [class.curtain-open]="armed()"
+      (click)="open()"
+      (keydown.enter)="open()"
+      role="button"
+      tabindex="0"
+      [attr.aria-label]="'Open guard for ' + label"
+    >
+      <span class="curtain-label">{{ label }}</span>
+    </div>
+  }
+</div>

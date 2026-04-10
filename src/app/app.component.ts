@@ -1,50 +1,85 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
-import { Subscription } from 'rxjs';
-import { SmsService, LnkState, StsState } from './services/sms.service';
+import { Component, computed, inject } from '@angular/core';
+import { NgClass } from '@angular/common';
+import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { SmsService } from './services/sms.service';
+import { LoadoutDisplayComponent } from './components/shared/loadout-display/loadout-display.component';
+import { MenuBar, Menu, MenuItem, MenuTrigger, MenuContent } from '@angular/aria/menu';
+import { OverlayModule } from '@angular/cdk/overlay';
 
 @Component({
   selector: 'app-root',
+  standalone: true,
+  imports: [NgClass, RouterLink, RouterLinkActive, RouterOutlet, LoadoutDisplayComponent, MenuBar, Menu, MenuItem, OverlayModule, MenuTrigger, MenuContent],
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss'],
 })
-export class AppComponent implements OnInit, OnDestroy {
-  lnkState: LnkState = 'GREEN';
-  stsState: StsState = 'GREEN';
-  private subs: Subscription[] = [];
+export class AppComponent {
+  private readonly router = inject(Router);
+  protected readonly sms = inject(SmsService);
 
   navItems = [
-    { label: 'Air-Ground',   path: '/air-ground' },
-    { label: 'Profiles',     path: '/profiles' },
-    { label: 'Status',       path: '/status' },
+    { label: 'Air-Ground', path: '/air-ground' },
+    { label: 'Profiles', path: '/profiles' },
+    { label: 'Status', path: '/status' },
     { label: 'Sel Jettison', path: '/selective-jettison' },
-    { label: 'Inventory',    path: '/inventory' },
+    { label: 'Inventory', path: '/inventory' },
   ];
 
-  constructor(public sms: SmsService) {}
-
-  ngOnInit(): void {
-    this.subs.push(this.sms.lnkState$.subscribe(s => { this.lnkState = s; }));
-    this.subs.push(this.sms.stsState$.subscribe(s => { this.stsState = s; }));
-  }
-
-  ngOnDestroy(): void { this.subs.forEach(s => s.unsubscribe()); }
-
-  getLnkClass(): Record<string, boolean> {
+  protected readonly lnkClass = computed<Record<string, boolean>>(() => {
+    const state = this.sms.linkState();
     return {
-      'ind-green':        this.lnkState === 'GREEN',
-      'ind-blink-green':  this.lnkState === 'BLINK_GREEN',
-      'ind-blink-yellow': this.lnkState === 'BLINK_YELLOW',
-      'ind-red':          this.lnkState === 'RED',
+      'ind-green': state === 'GREEN',
+      'ind-blink-green': state === 'BLINK_GREEN',
+      'ind-blink-yellow': state === 'BLINK_YELLOW',
+      'ind-red': state === 'RED',
     };
+  });
+
+  protected readonly stsClass = computed<Record<string, boolean>>(() => {
+    const state = this.sms.stsState();
+    return {
+      'ind-green': state === 'GREEN',
+      'ind-red': state === 'RED',
+      'ind-blink-red': state === 'BLINK_RED',
+      'ind-yellow': state === 'YELLOW',
+      'ind-blink-yellow': state === 'BLINK_YELLOW',
+    };
+  });
+ 
+  newSession(): void {
+    console.log('New session');
   }
 
-  getStsClass(): Record<string, boolean> {
-    return {
-      'ind-green':        this.stsState === 'GREEN',
-      'ind-red':          this.stsState === 'RED',
-      'ind-blink-red':    this.stsState === 'BLINK_RED',
-      'ind-yellow':       this.stsState === 'YELLOW',
-      'ind-blink-yellow': this.stsState === 'BLINK_YELLOW',
-    };
+  saveSession(): void {
+    console.log('Save session');
   }
+
+  exitApp(): void {
+    console.log('Exit app');
+  }
+
+  goStatus(): void {
+    this.router.navigate(['/status']);
+  }
+
+  goAirGround(): void {
+    this.router.navigate(['/air-ground/select-store']);
+  }
+
+  goInventory(): void {
+    this.router.navigate(['/inventory']);
+  }
+
+  goProfiles(): void {
+    this.router.navigate(['/profiles']);
+  }
+
+  goSelJettison(): void {
+    this.router.navigate(['/selective-jettison']);
+  }
+
+  openAbout(): void {
+    alert('SMS Trainer\nVersion 1.0');
+  }
+
 }

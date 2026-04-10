@@ -3,6 +3,16 @@
 html{
   // zoom: 1.4;
 }
+/* ── Touchscreen-style circle cursor ─────────────────────────────────── */
+/* Encodes a translucent circle as an inline SVG data URI.               */
+/* The 16,16 at the end is the hotspot (center of the 32×32 SVG).       */
+/* Adjust the r, stroke, and fill-opacity values to taste.               */
+
+$cursor-svg: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32"><circle cx="16" cy="16" r="14" fill="white" fill-opacity="0.15" stroke="white" stroke-width="1.5"/></svg>';
+
+*, *::before, *::after {
+  cursor: url('#{$cursor-svg}') 16 16, auto !important;
+}
 
 body { background: #111; color: #e0e0e0; font-family: 'Courier New', monospace; font-size: 18px; }
 

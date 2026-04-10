@@ -1,221 +1,561 @@
+/**
+ * select-target.component.scss
+ * ============================
+ * Styles for the Select Target page of the SMS trainer application.
+ *
+ * This stylesheet covers three visual contexts:
+ *   1. The main Select Target list view (CCTGP card, saved targets rows,
+ *      scroll arrows, footer with Create Target and True/Mag toggle).
+ *   2. The Create Target form view (Source, Name, Coordinates, Elevation
+ *      buttons plus control buttons).
+ *   3. Overlay popups (Store assignment popup, Choose Target Source popup).
+ *
+ * NOTE: On-screen keyboard styles have been moved to the shared
+ * KeyboardPopupComponent (src/app/components/shared/keyboard-popup/).
+ *
+ * The visual language mirrors the real GSMS interface: dark background,
+ * grey gradient buttons with rounded white borders, Courier New monospace
+ * font, green section labels, blue active/selected states, dashed animated
+ * borders for the selected target, and red text for unset fields.
+ */
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   SHARED LAYOUT
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+:host {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  overflow: hidden;
+  font-family: 'Courier New', monospace;
+  color: #fff;
+}
+
+.title-bar {
+  text-align: center;
+  font-size: 16px;
+  font-weight: bold;
+  padding: 6px 0;
+  border-bottom: 2px solid #888;
+  color: #f0f0f0;
+  font-family: 'Courier New', monospace;
+  background: transparent;
+}
+
+/* SMS button base */
+.sms-btn {
+  cursor: pointer;
+  font-family: 'Courier New', monospace;
+  text-transform: uppercase;
+  border: none;
+  padding: 0;
+  outline: none;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   SELECT TARGET VIEW
+   ═══════════════════════════════════════════════════════════════════════════ */
+
 .tgt-page {
   flex: 1;
   display: flex;
   flex-direction: column;
-  padding: 8px 12px;
+  padding: 4px 8px;
   overflow: hidden;
-  position: relative;
 }
+
+/* ── Section Labels ─────────────────────────────────────────────────────── */
 
 .tgt-section-label {
-  color: #00ff99;
-  font-size: 12px;
+  color: #00ff00;
+  font-size: 13px;
   font-weight: bold;
   font-family: 'Courier New', monospace;
-  margin-bottom: 4px;
+  padding: 4px 0;
+  text-decoration: underline;
 }
 
-/* Cross-Cued card */
+.saved-label {
+  margin-top: 6px;
+}
+
+/* ── CCTGP Card ─────────────────────────────────────────────────────────── */
+
 .cctgp-card {
   display: flex;
-  align-items: stretch;
-  border: 2px dashed #4a9eff;
-  background: #030d1a;
-  padding: 8px 12px;
-  gap: 12px;
-  border-radius: 2px;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  border: 2px solid transparent;
+  border-radius: 4px;
+  background: #1a1a1a;
 }
 
-.cctgp-empty {
-  color: #666;
-  font-size: 12px;
-  font-family: 'Courier New', monospace;
-  padding: 8px 12px;
-  border: 1px solid #333;
-  border-radius: 2px;
+.cctgp-selected {
+  border: 2px dashed #4488ff;
+  animation: dash-march 1s linear infinite;
+}
+
+@keyframes dash-march {
+  to { border-color: #88aaff; }
 }
 
 .cctgp-info {
   flex: 1;
   display: flex;
-  flex-direction: column;
-  gap: 4px;
+  gap: 12px;
 }
 
-.cctgp-row {
+.cctgp-col {
   display: flex;
-  gap: 24px;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.cctgp-source-col {
+  margin-left: auto;
+}
+
+.cctgp-text {
+  color: #e0e0e0;
   font-size: 12px;
   font-family: 'Courier New', monospace;
-  color: #e0e0e0;
 }
 
-.cctgp-source {
+.cctgp-name {
   font-weight: bold;
-  color: #fff;
-}
-
-.cctgp-tag { color: #aaa; }
-
-.cctgp-btns {
-  display: flex;
-  flex-direction: row;
-  gap: 8px;
-  align-items: center;
+  font-size: 13px;
 }
 
 .sms-btn.cctgp-btn {
-  min-width: 90px;
-  padding: 8px 10px;
-  font-size: 12px;
+  min-width: 80px;
+  height: 44px;
+  font-size: 11px;
+  border-radius: 6px;
+  border: 2px solid #cfcfcf;
+  background: linear-gradient(180deg, #6a6a6a 0%, #2c2c2c 100%);
+  color: #fff;
+  font-family: 'Courier New', monospace;
   text-align: center;
-  line-height: 1.4;
+  line-height: 1.3;
 }
 
-/* Saved Targets */
+.sms-btn.cctgp-btn.select-btn.active {
+  background: linear-gradient(180deg, #1a44cc 0%, #0a1a6a 100%);
+  border-color: #8899ff;
+}
+
+.sms-btn.cctgp-btn.mode-btn.mode-active {
+  background: linear-gradient(180deg, #1a44cc 0%, #0a1a6a 100%);
+  border-color: #8899ff;
+}
+
+/* ── Saved Targets Area ─────────────────────────────────────────────────── */
+
 .saved-area {
   flex: 1;
   display: flex;
-  flex-direction: row;
   gap: 8px;
-  min-height: 0;
-  margin-top: 2px;
+  overflow: hidden;
 }
 
 .saved-list {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: 4px;
   overflow: hidden;
 }
+
+.no-targets-msg {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ff3333;
+  font-size: 15px;
+  font-style: italic;
+  font-family: 'Courier New', monospace;
+}
+
+/* ── Saved Target Row ───────────────────────────────────────────────────── */
 
 .saved-row {
   display: flex;
   align-items: center;
-  gap: 16px;
-  padding: 7px 12px;
-  background: #0d0d0d;
-  border: 1px solid #333;
-  border-radius: 2px;
-  cursor: pointer;
-  transition: background 0.1s;
+  gap: 8px;
+  padding: 6px 8px;
+  border: 2px solid transparent;
+  border-radius: 4px;
+  background: #1a1a1a;
+}
 
-  &:hover { background: #1a1a1a; border-color: #555; }
-  &.saved-selected { background: #001e34; border-color: #4a9eff; }
+.saved-selected {
+  border: 2px dashed #4488ff;
+  animation: dash-march 1s linear infinite;
+}
+
+.saved-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.saved-info-top {
+  display: flex;
+  gap: 12px;
 }
 
 .saved-name {
-  width: 90px;
-  font-size: 12px;
   font-weight: bold;
-  font-family: 'Courier New', monospace;
+  font-size: 13px;
   color: #fff;
-  flex-shrink: 0;
-}
-
-.saved-coords {
-  flex: 1;
-  display: flex;
-  gap: 16px;
-  font-size: 11px;
-  font-family: 'Courier New', monospace;
-  color: #ccc;
 }
 
 .saved-source {
-  font-size: 11px;
-  font-family: 'Courier New', monospace;
-  color: #888;
-  flex-shrink: 0;
+  color: #aaa;
+  font-size: 12px;
 }
 
-/* Scroll buttons */
+.saved-info-bottom {
+  display: flex;
+}
+
+.saved-coord {
+  color: #ccc;
+  font-size: 11px;
+  font-family: 'Courier New', monospace;
+}
+
+.saved-btns {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.sms-btn.saved-action-btn {
+  min-width: 80px;
+  height: 32px;
+  font-size: 11px;
+  border-radius: 6px;
+  border: 2px solid #cfcfcf;
+  background: linear-gradient(180deg, #6a6a6a 0%, #2c2c2c 100%);
+  color: #fff;
+  font-family: 'Courier New', monospace;
+  text-align: center;
+}
+
+.sms-btn.saved-action-btn.active {
+  background: linear-gradient(180deg, #1a44cc 0%, #0a1a6a 100%);
+  border-color: #8899ff;
+}
+
+/* ── Scroll Buttons ─────────────────────────────────────────────────────── */
+
 .scroll-btns {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 4px;
   justify-content: space-between;
-  padding: 4px 0;
+}
+
+.scroll-spacer {
+  flex: 1;
 }
 
 .sms-btn.scroll-btn {
-  width: 52px;
-  height: 52px;
-  font-size: 22px;
+  width: 44px;
+  height: 44px;
+  font-size: 20px;
+  border-radius: 6px;
+  border: 2px solid #cfcfcf;
+  background: linear-gradient(180deg, #6a6a6a 0%, #2c2c2c 100%);
+  color: #fff;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 0;
-  background: linear-gradient(180deg, #3a3a3a 0%, #2a2a2a 100%);
-  border: 2px solid #555;
-  border-radius: 6px;
 }
 
-/* Footer */
+.sms-btn.scroll-btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+/* ── Footer ─────────────────────────────────────────────────────────────── */
+
 .tgt-footer {
   display: flex;
   align-items: center;
-  padding: 6px 0 2px 0;
-  flex-shrink: 0;
+  padding: 6px 0;
+  gap: 8px;
+}
+
+.footer-spacer {
+  flex: 1;
 }
 
 .sms-btn.create-btn {
-  padding: 8px 18px;
-  font-size: 12px;
+  height: 38px;
+  padding: 0 16px;
+  font-size: 13px;
+  border-radius: 8px;
+  border: 2px solid #cfcfcf;
+  background: linear-gradient(180deg, #6a6a6a 0%, #2c2c2c 100%);
+  color: #fff;
   font-family: 'Courier New', monospace;
-  background: linear-gradient(180deg, #3a3a3a 0%, #2a2a2a 100%);
-  border: 2px solid #555;
-  border-radius: 6px;
 }
 
-/* Create form overlay */
-.create-form {
+.sms-btn.heading-btn {
+  height: 38px;
+  padding: 0 16px;
+  font-size: 13px;
+  border-radius: 8px;
+  border: 2px solid #cfcfcf;
+  background: linear-gradient(180deg, #6a6a6a 0%, #2c2c2c 100%);
+  color: #fff;
+  font-family: 'Courier New', monospace;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   STORE ASSIGNMENT POPUP
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.store-popup-overlay {
   position: absolute;
   inset: 0;
-  background: rgba(0,0,0,0.75);
+  background: rgba(0, 0, 0, 0.65);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 50;
 }
 
-.create-form-inner {
-  background: #1a1a1a;
-  border: 2px solid #555;
+.store-popup {
+  background: #181818;
+  border: 2px solid #888;
   border-radius: 8px;
-  padding: 16px 20px;
-  min-width: 340px;
+  padding: 14px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 280px;
+}
+
+.store-popup-title {
+  color: #fff;
+  font-size: 14px;
+  font-weight: bold;
+  font-family: 'Courier New', monospace;
+  text-transform: uppercase;
+  text-align: center;
+}
+
+.store-popup-grid {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+}
+
+.store-column {
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
 
-.create-title {
-  color: #00ff99;
-  font-size: 13px;
-  font-weight: bold;
-  text-transform: uppercase;
+.sms-btn.store-popup-btn {
+  min-width: 90px;
+  height: 36px;
+  font-size: 11px;
+  border-radius: 6px;
+  border: 2px solid #cfcfcf;
+  background: linear-gradient(180deg, #6a6a6a 0%, #2c2c2c 100%);
+  color: #fff;
   font-family: 'Courier New', monospace;
-  margin-bottom: 4px;
+  text-align: center;
 }
 
-.cf-row {
+.sms-btn.store-popup-btn.store-assigned {
+  background: linear-gradient(180deg, #1a44cc 0%, #0a1a6a 100%);
+  border-color: #8899ff;
+}
+
+.store-popup-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+}
+
+.sms-btn.store-popup-action {
+  min-width: 90px;
+  height: 36px;
+  font-size: 12px;
+  border-radius: 6px;
+  border: 2px solid #cfcfcf;
+  background: linear-gradient(180deg, #6a6a6a 0%, #2c2c2c 100%);
+  color: #fff;
+  font-family: 'Courier New', monospace;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   CREATE / MODIFY TARGET VIEW
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.create-page {
+  flex: 1;
+  display: flex;
+  padding: 8px;
+  gap: 12px;
+  overflow: hidden;
+}
+
+/* ── Control Buttons (left column) ──────────────────────────────────────── */
+
+.create-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 110px;
+}
+
+.ctrl-spacer {
+  flex: 1;
+}
+
+.sms-btn.create-ctrl-btn {
+  min-height: 50px;
+  font-size: 13px;
+  border-radius: 8px;
+  border: 2px solid #cfcfcf;
+  background: linear-gradient(180deg, #6a6a6a 0%, #2c2c2c 100%);
+  color: #fff;
+  font-family: 'Courier New', monospace;
+  text-align: center;
+  line-height: 1.3;
+  padding: 6px 10px;
+}
+
+.sms-btn.create-ctrl-btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.sms-btn.create-ctrl-btn.guarded-btn {
+  background: linear-gradient(180deg, #cc6600 0%, #993300 100%);
+  border-color: #ffaa44;
+}
+
+.sms-btn.create-ctrl-btn.guarded-btn.armed {
+  background: linear-gradient(180deg, #cc2200 0%, #880000 100%);
+  border-color: #ff4444;
+}
+
+/* ── Form Fields (right area) ───────────────────────────────────────────── */
+
+.create-fields {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  justify-content: center;
+  padding: 10px 20px;
+}
+
+.create-field-row {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 12px;
 }
 
-.cf-label {
-  width: 72px;
-  font-size: 12px;
-  color: #aaa;
+.create-label {
+  color: #e0e0e0;
+  font-size: 14px;
   font-family: 'Courier New', monospace;
-  flex-shrink: 0;
+  font-weight: bold;
+  min-width: 110px;
+  text-align: right;
 }
 
-.cf-actions {
+.sms-btn.create-field-btn {
+  flex: 1;
+  min-height: 42px;
+  padding: 6px 14px;
+  font-size: 15px;
+  border-radius: 10px;
+  border: 2px solid #cfcfcf;
+  background: linear-gradient(180deg, #6a6a6a 0%, #2c2c2c 100%);
+  color: #fff;
+  font-family: 'Courier New', monospace;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+/* Red text for unset fields (matches demo) */
+.sms-btn.create-field-btn.unset-field {
+  color: #ff3333;
+}
+
+/* Red text shown inside buttons when a field has no value yet */
+.unset-text {
+  color: #ff3333;
+  font-style: italic;
+}
+
+/* ── Choose Target Source Popup ─────────────────────────────────────────── */
+
+.source-popup-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.65);
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-start;
+  padding-top: 20px;
+  padding-left: 140px;
+  z-index: 50;
+}
+
+.source-popup {
+  background: #181818;
+  border: 2px solid #888;
+  border-radius: 8px;
+  padding: 14px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.source-popup-title {
+  color: #fff;
+  font-size: 14px;
+  font-weight: bold;
+  font-family: 'Courier New', monospace;
+  text-transform: uppercase;
+  text-align: center;
+}
+
+.source-popup-btns {
   display: flex;
   gap: 8px;
-  margin-top: 4px;
+}
+
+.sms-btn.source-opt {
+  width: 140px;
+  height: 50px;
+  font-size: 14px;
+  border-radius: 8px;
+  border: 2px solid #cfcfcf;
+  background: linear-gradient(180deg, #6a6a6a 0%, #2c2c2c 100%);
+  color: #fff;
+  font-family: 'Courier New', monospace;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sms-btn.source-opt.source-selected {
+  background: linear-gradient(180deg, #1a44cc 0%, #0a1a6a 100%);
+  border-color: #8899ff;
+  color: #fff;
 }

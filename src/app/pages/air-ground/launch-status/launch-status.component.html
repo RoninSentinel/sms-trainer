@@ -4,17 +4,17 @@
   <div class="launch-main">
     <!-- Checklist -->
     <div class="checklist">
-      <ng-container *ngIf="family === 'Hellfire'">
-        <div class="check-row" [class.check-ok]="isStorePowered">
-          <span class="check-led" [class.led-on]="isStorePowered"></span>
+      @if (family() === 'Hellfire') {
+        <div class="check-row" [class.check-ok]="isStorePowered()">
+          <span class="check-led" [class.led-on]="isStorePowered()"></span>
           <span class="check-label">Store Powered</span>
         </div>
-        <div class="check-row" [class.check-ok]="storeSettingsCorrect">
-          <span class="check-led" [class.led-on]="storeSettingsCorrect"></span>
+        <div class="check-row" [class.check-ok]="storeSettingsCorrect()">
+          <span class="check-led" [class.led-on]="storeSettingsCorrect()"></span>
           <span class="check-label">Store Settings Correct</span>
         </div>
-        <div class="check-row" [class.check-ok]="targetSelected">
-          <span class="check-led" [class.led-on]="targetSelected"></span>
+        <div class="check-row" [class.check-ok]="targetSelected()">
+          <span class="check-led" [class.led-on]="targetSelected()"></span>
           <span class="check-label">Target Selected</span>
         </div>
         <div class="check-row" [class.check-ok]="true">
@@ -25,19 +25,19 @@
           <span class="check-led led-on"></span>
           <span class="check-label">Master Arm On</span>
         </div>
-        <div class="check-row" [class.check-ok]="readyForLaunch">
-          <span class="check-led" [class.led-on]="readyForLaunch"></span>
+        <div class="check-row" [class.check-ok]="readyForLaunch()">
+          <span class="check-led" [class.led-on]="readyForLaunch()"></span>
           <span class="check-label">System Ready for Launch</span>
         </div>
-      </ng-container>
+      }
 
-      <ng-container *ngIf="family === 'GBU' || family === 'JDAM'">
-        <div class="check-row" [class.check-ok]="storeSettingsCorrect">
-          <span class="check-led" [class.led-on]="storeSettingsCorrect"></span>
+      @if (family() === 'GBU') {
+        <div class="check-row" [class.check-ok]="storeSettingsCorrect()">
+          <span class="check-led" [class.led-on]="storeSettingsCorrect()"></span>
           <span class="check-label">Store Settings Correct</span>
         </div>
-        <div class="check-row" [class.check-ok]="targetSelected">
-          <span class="check-led" [class.led-on]="targetSelected"></span>
+        <div class="check-row" [class.check-ok]="targetSelected()">
+          <span class="check-led" [class.led-on]="targetSelected()"></span>
           <span class="check-label">Target Selected</span>
         </div>
         <div class="check-row" [class.check-ok]="true">
@@ -48,19 +48,19 @@
           <span class="check-led led-on"></span>
           <span class="check-label">Release Solution Valid</span>
         </div>
-        <div class="check-row" [class.check-ok]="fuzeArmed">
-          <span class="check-led" [class.led-on]="fuzeArmed"></span>
+        <div class="check-row" [class.check-ok]="fuzeArmed()">
+          <span class="check-led" [class.led-on]="fuzeArmed()"></span>
           <span class="check-label">Weapon Fuze Armed</span>
         </div>
         <div class="check-row" [class.check-ok]="true">
           <span class="check-led led-on"></span>
           <span class="check-label">Master Arm On</span>
         </div>
-        <div class="check-row" [class.check-ok]="readyForLaunch">
-          <span class="check-led" [class.led-on]="readyForLaunch"></span>
+        <div class="check-row" [class.check-ok]="readyForLaunch()">
+          <span class="check-led" [class.led-on]="readyForLaunch()"></span>
           <span class="check-label">Ready For Release</span>
         </div>
-      </ng-container>
+      }
     </div>
 
     <!-- PRF Code Match panel -->
@@ -70,10 +70,12 @@
         <span class="prf-title">PRF Code Match</span>
       </div>
       <div class="prf-row"><span class="prf-label">MTS</span><span class="prf-val">{{ sms.mtsPrf }}</span></div>
-      <div class="prf-row" *ngFor="let st of armedStations">
-        <span class="prf-label">{{ st.label }}</span>
-        <span class="prf-val">{{ getPrf(st.id) }}</span>
-      </div>
+      @for (st of armedStations(); track st.id) {
+        <div class="prf-row">
+          <span class="prf-label">{{ st.label }}</span>
+          <span class="prf-val">{{ getPrf(st.id) }}</span>
+        </div>
+      }
     </div>
   </div>
 

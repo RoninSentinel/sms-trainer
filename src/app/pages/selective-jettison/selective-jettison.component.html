@@ -1,36 +1,46 @@
 <div class="title-bar">Selective Jettison</div>
 <div class="page-layout">
   <div class="control-section">
-    <button class="sms-btn guarded" [disabled]="selectedCount === 0" (click)="executeJettison()">
-      Jettison
-    </button>
+    <button class="sms-btn guarded" [disabled]="selectedCount() === 0" (click)="executeJettison()">Jettison</button>
     <button class="sms-btn" (click)="cancelJettison()">Cancel</button>
-    <div class="sel-count" *ngIf="selectedCount > 0">{{ selectedCount }} selected</div>
+    @if (selectedCount() > 0) {
+      <div class="sel-count">{{ selectedCount() }} selected</div>
+    }
   </div>
 
   <div class="page-section">
     <div class="sj-instructions">
-      Select stations to jettison. Press the guarded Jettison button to execute.
-      Entering Air-Ground mode will cancel this selection.
+      Select stations to jettison. Press the guarded Jettison button to execute. Entering Air-Ground mode will cancel
+      this selection.
     </div>
 
     <div class="sj-grid">
-      <div *ngFor="let st of stations"
-           class="sj-card"
-           [class.sj-sel]="isSelected(st.id)"
-           [class.sj-jetted]="isJettisoned(st.id)"
-           [class.sj-empty]="!st.storeType"
-           (click)="st.storeType && !isJettisoned(st.id) ? toggleSelect(st.id) : null">
-        <div class="sj-sta">Station {{ st.id }}</div>
-        <div class="sj-type">{{ st.storeType || 'EMPTY' }}</div>
-        <div class="sj-status" [ngClass]="getStatusClass(st.storeStatus)">{{ st.storeStatus || '--' }}</div>
-        <div *ngIf="isSelected(st.id)"   class="sj-flag sj-flag-sel">SELECTED</div>
-        <div *ngIf="isJettisoned(st.id)" class="sj-flag sj-flag-jet">JETTED</div>
-      </div>
+      @for (st of stations(); track st.id) {
+        <div
+          class="sj-card"
+          tabindex="0"
+          role="button"
+          [class.sj-sel]="isSelected(st.id)"
+          [class.sj-jetted]="isJettisoned(st.id)"
+          [class.sj-empty]="!st.storeType"
+          (click)="st.storeType && !isJettisoned(st.id) ? toggleSelect(st.id) : null"
+          (keydown.enter)="st.storeType && !isJettisoned(st.id) ? toggleSelect(st.id) : null"
+        >
+          <div class="sj-sta">Station {{ st.id }}</div>
+          <div class="sj-type">{{ st.storeType || 'EMPTY' }}</div>
+          <div class="sj-status" [ngClass]="getStatusClass(st.storeStatus)">{{ st.storeStatus || '--' }}</div>
+          @if (isSelected(st.id)) {
+            <div class="sj-flag sj-flag-sel">SELECTED</div>
+          }
+          @if (isJettisoned(st.id)) {
+            <div class="sj-flag sj-flag-jet">JETTED</div>
+          }
+        </div>
+      }
     </div>
 
-    <div *ngIf="jettExecuted" class="sj-result">
-      Jettison command sent for {{ jettisoned.length }} station(s).
-    </div>
+    @if (jettExecuted()) {
+      <div class="sj-result">Jettison command sent for {{ jettisoned().length }} station(s).</div>
+    }
   </div>
 </div>

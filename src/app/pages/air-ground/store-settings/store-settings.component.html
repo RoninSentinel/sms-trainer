@@ -1,63 +1,372 @@
+<!--
+  Store Settings Template
+  =======================
+  All numeric value fields use clickable buttons that open the shared
+  NumpadPopupComponent instead of free-form keyboard <input> elements,
+  matching the real software's PRF Code Keypad (Figure 1-51).
+-->
+
+<!-- ─── Title bar ─────────────────────────────────────────────────────── -->
 <div class="title-bar">Air To Ground: Store Settings</div>
+
+<!-- ─── Main two-column layout ────────────────────────────────────────── -->
 <div class="page-layout-ref">
-
-  <!-- LEFT: settings content -->
+  <!-- ═══════ LEFT COLUMN: settings content ═══════ -->
   <div class="settings-content">
-    <div *ngIf="!selectedStation" class="no-selection">Select a station using the arrows.</div>
+    @if (!selectedStation()) {
+      <div class="no-selection">Select a station using the arrows.</div>
+    }
 
-    <!-- HELLFIRE -->
-    <ng-container *ngIf="selectedStation && family === 'Hellfire' && hf">
-      <div class="ref-section-label">Launch Settings</div>
+    <!-- ─── HELLFIRE (AGM-114) settings panel ─────────────────────────── -->
+    @if (selectedStation() && storeVariant() === 'Hellfire' && hf) {
+      <div class="ref-section-label">Guidance Settings</div>
+
       <div class="ref-field-row">
-        <span class="ref-label">Launch Mode</span>
-        <button class="sms-btn ref-val" (click)="cycleHfLaunchMode()">{{ hf.launchMode }}</button>
+        <span class="ref-label">LOAL</span>
+        <button class="sms-btn ref-val" (click)="showLaunchModePopup = true">
+          {{ hf.launchMode }}
+        </button>
       </div>
+
       <div class="ref-field-row">
-        <span class="ref-label">PRF Code</span>
-        <div class="ref-input-box">
-          <input class="sms-input ref" [(ngModel)]="hf.laserCode" maxlength="4" (change)="saveHf()" />
-        </div>
+        <span class="ref-label">PRF</span>
+        <button class="sms-btn ref-val numpad-trigger" (click)="openHfPrfNumpad()">
+          {{ hf.laserCode }}
+        </button>
+        <button class="sms-btn ref-apply-inline" (click)="applyToType()">Type</button>
+        <button class="sms-btn ref-apply-inline">Ripple</button>
       </div>
+
+      <div class="ref-section-label section-gap">Telemetry Settings</div>
+
       <div class="ref-field-row">
         <span class="ref-label">TM Power</span>
-        <button class="sms-btn ref-val" [class.active]="hf.tmPower" (click)="hf.tmPower=!hf.tmPower; saveHf()">
+        <button class="sms-btn ref-val" (click)="showTmPowerPopup = true">
           {{ hf.tmPower ? 'On' : 'Off' }}
         </button>
       </div>
-    </ng-container>
 
-    <!-- GBU -->
-    <ng-container *ngIf="selectedStation && (family === 'GBU' || family === 'JDAM') && gbu">
-      <div class="ref-section-label">Fuze Setting</div>
+      <div class="ref-section-label section-gap">Fuze Settings</div>
+
       <div class="ref-field-row">
-        <span class="ref-label">Fuze</span>
-        <button class="sms-btn ref-val" (click)="cycleGbuFuzing()">{{ gbu.fuzingType }}</button>
+        <span class="ref-label">Fuze Function</span>
+        <button class="sms-btn ref-val" (click)="showFuzeFunctionPopup = true">
+          {{ hf.fuzeFunction }}
+        </button>
       </div>
-      <div class="ref-section-label" style="margin-top:16px">PRF Setting</div>
+    }
+
+    <!-- ─── GBU-12 settings panel ─────────────────────────────────────── -->
+    @if (selectedStation() && storeVariant() === 'GBU12' && gbu) {
+      <div class="ref-section-label">Guidance Settings</div>
+
       <div class="ref-field-row">
-        <span class="ref-label">PRF Code</span>
-        <div class="ref-input-box">
-          <input class="sms-input ref" [(ngModel)]="gbu.prf" maxlength="4" (change)="saveGbu()" />
+        <span class="ref-label">PRF</span>
+        <button class="sms-btn ref-val numpad-trigger" (click)="openGbuPrfNumpad()">
+          {{ gbu.prf }}
+        </button>
+      </div>
+
+      <div class="ref-section-label section-gap">Fuze Settings</div>
+
+      <div class="ref-field-row">
+        <span class="ref-label">Fuze Arm</span>
+        <button class="sms-btn ref-val" (click)="showFuzeArmPopup = true">
+          {{ gbuFuzeArmLabel }}
+        </button>
+      </div>
+    }
+
+    <!-- ─── GBU-38/49/54/48 (complex) settings panel ─────────────────── -->
+    @if (selectedStation() && storeVariant() === 'GBU-Complex' && gbu) {
+      <div class="ref-section-label">Target Settings</div>
+
+      <div class="ref-field-row-triple">
+        <div class="offset-group">
+          <span class="offset-header">Offset North</span>
+          <button class="sms-btn offset-val-btn" (click)="openOffsetNorthNumpad()">
+            <span class="offset-val-text">{{ gbu.offsetN }}</span>
+            <span class="offset-unit">(m)</span>
+          </button>
+        </div>
+        <div class="offset-group">
+          <span class="offset-header">Offset East</span>
+          <button class="sms-btn offset-val-btn" (click)="openOffsetEastNumpad()">
+            <span class="offset-val-text">{{ gbu.offsetE }}</span>
+            <span class="offset-unit">(m)</span>
+          </button>
+        </div>
+        <div class="offset-group">
+          <span class="offset-header">Offset Down</span>
+          <button class="sms-btn offset-val-btn" (click)="openOffsetDownNumpad()">
+            <span class="offset-val-text">{{ gbu.offsetD }}</span>
+            <span class="offset-unit">(m)</span>
+          </button>
         </div>
       </div>
-    </ng-container>
+
+      <div class="ref-field-row-pair">
+        <div class="pair-group">
+          <span class="pair-header">Impact Angle</span>
+          <div class="pair-controls">
+            <button class="sms-btn ref-toggle" [class.active]="gbu.impactAngleEnabled" (click)="toggleImpactAngle()">
+              {{ gbu.impactAngleEnabled ? 'On' : 'Off' }}
+            </button>
+            <button
+              class="sms-btn ref-val-compact"
+              [class.disabled]="!gbu.impactAngleEnabled"
+              [disabled]="!gbu.impactAngleEnabled"
+              (click)="openImpactAngleNumpad()"
+            >
+              {{ gbu.impactAngle }}°
+            </button>
+          </div>
+        </div>
+
+        <div class="pair-group">
+          <span class="pair-header">Impact Azimuth</span>
+          <div class="pair-controls">
+            <button class="sms-btn ref-toggle" [class.active]="gbu.impactAzimuthEnabled" (click)="toggleImpactAzimuth()">
+              {{ gbu.impactAzimuthEnabled ? 'On' : 'Off' }}
+            </button>
+            <button
+              class="sms-btn ref-val-compact"
+              [class.disabled]="!gbu.impactAzimuthEnabled"
+              [disabled]="!gbu.impactAzimuthEnabled"
+              (click)="openImpactAzimuthNumpad()"
+            >
+              {{ gbu.impactAzimuth }}°
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="ref-section-label section-gap">Fuze Settings</div>
+
+      <div class="ref-field-row-triple">
+        <div class="offset-group">
+          <span class="offset-header">Fuze Arm</span>
+          <button
+            class="sms-btn ref-val fuze-val"
+            (click)="gbu.fuzeArm = gbu.fuzeArm === 'SAFE' ? 'ARM' : 'SAFE'; saveGbu()"
+          >
+            {{ gbu.fuzeArm === 'SAFE' ? 'None' : 'Armed' }}
+          </button>
+        </div>
+        <div class="offset-group">
+          <span class="offset-header">Function</span>
+          <button class="sms-btn offset-val-btn" (click)="openFunctionDelayNumpad()">
+            <span class="offset-val-text">{{ gbu.functionDelay }}</span>
+            <span class="offset-unit">(ms)</span>
+          </button>
+        </div>
+        <div class="offset-group">
+          <span class="offset-header">Arm</span>
+          <button class="sms-btn offset-val-btn" (click)="openArmDelayNumpad()">
+            <span class="offset-val-text">{{ gbu.armDelay }}</span>
+            <span class="offset-unit">(s)</span>
+          </button>
+        </div>
+      </div>
+    }
   </div>
 
-  <!-- RIGHT: station selector -->
-  <div class="station-selector">
-    <div class="sta-label">Station: {{ selectedStationId ?? '--' }}</div>
-    <div class="sta-arrows">
-      <button class="sms-btn sta-arrow" (click)="prevStation()" [disabled]="!canGoPrev">&#8592;</button>
-      <button class="sms-btn sta-arrow" (click)="nextStation()" [disabled]="!canGoNext">&#8594;</button>
-    </div>
-    <div class="sta-store-label">Store: {{ storeIndex }}</div>
-    <div class="sta-arrows">
-      <button class="sms-btn sta-arrow">&#8593;</button>
-      <button class="sms-btn sta-arrow">&#8595;</button>
-    </div>
-    <div class="apply-to-label">Apply To</div>
-    <button class="sms-btn apply-btn">Type</button>
-    <div *ngIf="segInfo" class="seg-label">Seg: {{ segInfo }}</div>
-  </div>
+  <!-- ═══════ RIGHT COLUMN: station selector sidebar ═══════ -->
+  <div class="station-sidebar">
+    <div class="station-label">{{ stationLabel() }}</div>
 
+    <div class="nav-arrows">
+      <button class="sms-btn nav-btn" [disabled]="!canGoPrev()" (click)="prevStation()">&#8592;</button>
+      <button class="sms-btn nav-btn" [disabled]="!canGoNext()" (click)="nextStation()">&#8594;</button>
+    </div>
+
+    @if (hasSubStations()) {
+      <button class="sms-btn nav-btn sub-nav" [disabled]="hfSubStationIdx() === 0" (click)="prevSubStation()">
+        &#8593;
+      </button>
+      <button
+        class="sms-btn nav-btn sub-nav"
+        [disabled]="hfSubStationIdx() >= (selectedStation()?.substations?.length ?? 1) - 1"
+        (click)="nextSubStation()"
+      >
+        &#8595;
+      </button>
+    }
+
+    @if (selectedStation()) {
+      <div class="apply-to-label">Apply To</div>
+      <button class="sms-btn apply-btn" (click)="applyToType()">Type</button>
+    }
+
+    @if (segInfo()) {
+      <div class="seg-label">Seq: {{ segInfo() }}</div>
+    }
+  </div>
 </div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     POPUP OVERLAYS
+     ═══════════════════════════════════════════════════════════════════════ -->
+
+<!-- ─── Popup: Lock on After Launch ───────────────────────────────────── -->
+@if (showLaunchModePopup) {
+  <div
+    class="sms-popup-overlay"
+    tabindex="0"
+    role="none"
+    (click)="showLaunchModePopup = false"
+    (keydown.enter)="showLaunchModePopup = false"
+  >
+    <div
+      class="sms-popup"
+      tabindex="-1"
+      role="dialog"
+      (click)="$event.stopPropagation()"
+      (keydown)="$event.stopPropagation()"
+    >
+      <table>
+        <tr>
+          <td><div class="sms-popup-title row">Lock on After Launch</div></td>
+        </tr>
+        <tr>
+          <td>
+            <div class="sms-popup-opts row">
+              @for (opt of launchModeOptions; track opt) {
+                <button class="sms-popup-opt" [class.selected]="hf.launchMode === opt" (click)="selectLaunchMode(opt)">
+                  {{ opt }}
+                </button>
+              }
+            </div>
+          </td>
+        </tr>
+      </table>
+    </div>
+  </div>
+}
+
+<!-- ─── Popup: Fuze Function ──────────────────────────────────────────── -->
+@if (showFuzeFunctionPopup) {
+  <div
+    class="sms-popup-overlay"
+    tabindex="0"
+    role="none"
+    (click)="showFuzeFunctionPopup = false"
+    (keydown.enter)="showFuzeFunctionPopup = false"
+  >
+    <div
+      class="sms-popup fuze-fn-popup"
+      tabindex="-1"
+      role="dialog"
+      (click)="$event.stopPropagation()"
+      (keydown)="$event.stopPropagation()"
+    >
+      <div class="sms-popup-title">Fuze Function</div>
+      <div class="fuze-fn-grid">
+        @for (fn of fuzeFunctionOptions; track fn) {
+          <button
+            class="sms-popup-opt fuze-fn-opt"
+            [class.selected]="hf.fuzeFunction === fn"
+            (click)="selectFuzeFunction(fn)"
+          >
+            {{ fn }}
+          </button>
+        }
+      </div>
+      <div class="fuze-fn-current">{{ hf.fuzeFunction }}</div>
+    </div>
+  </div>
+}
+
+<!-- ─── Popup: TM Power ───────────────────────────────────────────────── -->
+@if (showTmPowerPopup) {
+  <div
+    class="sms-popup-overlay"
+    tabindex="0"
+    role="none"
+    (click)="showTmPowerPopup = false"
+    (keydown.enter)="showTmPowerPopup = false"
+  >
+    <div
+      class="sms-popup"
+      tabindex="-1"
+      role="dialog"
+      (click)="$event.stopPropagation()"
+      (keydown)="$event.stopPropagation()"
+    >
+      <table>
+        <tr>
+          <td><div class="sms-popup-title row">TM Power</div></td>
+        </tr>
+        <tr>
+          <td>
+            <div class="sms-popup-opts row">
+              <button class="sms-popup-opt" [class.selected]="hf.tmPower" (click)="selectTmPower('On')">On</button>
+              <button class="sms-popup-opt" [class.selected]="!hf.tmPower" (click)="selectTmPower('Off')">Off</button>
+            </div>
+          </td>
+        </tr>
+      </table>
+    </div>
+  </div>
+}
+
+<!-- ─── Popup: Fuze Arming (GBU-12) ──────────────────────────────────── -->
+@if (showFuzeArmPopup) {
+  <div
+    class="sms-popup-overlay"
+    tabindex="0"
+    role="none"
+    (click)="showFuzeArmPopup = false"
+    (keydown.enter)="showFuzeArmPopup = false"
+  >
+    <div
+      class="sms-popup fuze-fn-popup"
+      tabindex="-1"
+      role="dialog"
+      (click)="$event.stopPropagation()"
+      (keydown)="$event.stopPropagation()"
+    >
+      <table>
+        <tr>
+          <td><div class="sms-popup-title row">Fuze Arming</div></td>
+        </tr>
+        <tr>
+          <td>
+            <div class="sms-popup-opts row">
+              @for (pos of fuzeArmPositions; track pos) {
+                <button
+                  class="sms-popup-opt"
+                  [class.selected]="isFuzeArmSelected(pos)"
+                  (click)="toggleFuzeArmPosition(pos)"
+                >
+                  {{ pos }}
+                </button>
+              }
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <div class="sms-popup-opts row" style="margin-top: 8px">
+              <button class="sms-popup-opt done-btn" (click)="doneFuzeArm()">Done</button>
+            </div>
+          </td>
+        </tr>
+      </table>
+    </div>
+  </div>
+}
+
+<!-- ─── Shared Numpad Popup Component ─────────────────────────────────── -->
+@if (showNumpad) {
+  <app-numpad-popup
+    [title]="numpadTitle"
+    [min]="numpadMin"
+    [max]="numpadMax"
+    [currentValue]="numpadCurrentValue"
+    [allowNegative]="numpadAllowNegative"
+    [allowDecimal]="numpadAllowDecimal"
+    (confirmed)="onNumpadConfirm($event)"
+    (cancelled)="onNumpadCancel()"
+  />
+}

@@ -1,30 +1,44 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
-import { Subscription } from 'rxjs';
-import { SmsService, Station } from '../../../services/sms.service';
+import { Component, inject } from '@angular/core';
+import { NgClass } from '@angular/common';
+import { SmsService, Station, StoreStatus, StoreType } from '../../../services/sms.service';
+
+const STORE_ICONS: Partial<Record<StoreType, string>> = {
+  GBU12: 'assets/weapon-icons/GBU.png',
+  GBU38: 'assets/weapon-icons/GBU.png',
+  GBU48: 'assets/weapon-icons/GBU.png',
+  GBU49: 'assets/weapon-icons/GBU.png',
+  GBU54: 'assets/weapon-icons/GBU.png',
+  Hellfire: 'assets/weapon-icons/hellfire.png',
+};
 
 @Component({
   selector: 'app-loadout-display',
+  standalone: true,
+  imports: [NgClass],
   templateUrl: './loadout-display.component.html',
   styleUrls: ['./loadout-display.component.scss'],
 })
-export class LoadoutDisplayComponent implements OnInit, OnDestroy {
-  stations: Station[] = [];
-  activeStationId: number | null = null;  // ← ADD
-  private subs: Subscription[] = [];
+export class LoadoutDisplayComponent {
+  private readonly sms = inject(SmsService);
 
-  constructor(private sms: SmsService) {}
+  protected readonly stations = this.sms.stations;
+  protected readonly activeStationId = this.sms.selectedStationId;
 
-  ngOnInit(): void {
-    this.subs.push(this.sms.stations$.subscribe(s => { this.stations = s; }));
-    this.subs.push(this.sms.selectedStationId$.subscribe(id => { this.activeStationId = id; }));  // ← ADD
+  getStatusClass(s: StoreStatus): string {
+    return this.sms.getStatusClass(s);
   }
 
-  ngOnDestroy(): void { this.subs.forEach(s => s.unsubscribe()); }
+  getStoreIcon(type: StoreType): string | null {
+    return STORE_ICONS[type] ?? null;
+  }
 
-  getStatusClass(s: string): string { return this.sms.getStatusClass(s as any); }
+  getStoreFamily(type: StoreType): string {
+    if (type.startsWith('GBU')) return 'gbu';
+    if (type === 'Hellfire') return 'hellfire';
+    return 'other';
+  }
 
   selectStation(station: Station): void {
-    this.sms.selectedStationId$.next(station.id);  // ← REPLACE previous toggle logic
-    this.activeStationId = station.id;
+    this.sms.selectedStationId.set(station.id);
   }
 }

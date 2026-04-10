@@ -1,0 +1,21 @@
+/**
+ * tsconfig.spec.json
+ * ==================
+ * TypeScript configuration used exclusively by the Karma test runner.
+ * Extends the root tsconfig.json and adds Jasmine type definitions
+ * so that global test functions (describe, it, expect, beforeEach, etc.)
+ * are recognized by the TypeScript compiler without explicit imports.
+ *
+ * Place this file at the project root alongside tsconfig.json.
+ */
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "outDir": "./out-tsc/spec",
+    "types": ["jasmine"]
+  },
+  "include": [
+    "src/**/*.spec.ts",
+    "src/**/*.d.ts"
+  ]
+}

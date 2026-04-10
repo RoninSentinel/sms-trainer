@@ -25,20 +25,30 @@
 }
 
 .store-icon {
-  width: 50px;
+  width: 200px;
   display: flex;
   align-items: center;
   justify-content: center;
+  padding-right:50px;
+
+  table { text-align: center; width: 100%; }
 }
 
-.store-icon-text {
-  font-size: 11px;
-  font-weight: bold;
-  font-family: 'Courier New', monospace;
+.store-icon-img {
+  object-fit: contain;
+
+  &.family-gbu {
+    max-height: 32px;
+    max-width: 100px;
+  }
+
+  &.family-hellfire {
+    max-height: 48px;
+    max-width: 130px;
+  }
 }
 
 .store-name {
-  flex: 1;
   font-size: 13px;
   font-weight: bold;
   font-family: 'Courier New', monospace;
@@ -54,10 +64,5 @@
   padding: 6px 10px;
   font-size: 12px;
 }
-
-.sms-btn.guarded { border-color: #8b4513; color: #cd853f; }
-.sms-btn.guarded.pwr-active { background: #8b4513; color: #fff; border-color: #cd5c5c; }
-
-.family-gbu      { color: #7ecfff; }
-.family-jdam     { color: #ffe082; }
-.family-hellfire { color: #ff8a65; }
+.family-gbu      { color: #03f003; }
+.family-hellfire { color: #03f003; }

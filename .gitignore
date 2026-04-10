@@ -1,2 +1,79 @@
-node_modules
-.angular
+# ========================
+# Angular .gitignore
+# ========================
+
+# Compiled output
+/dist
+/tmp
+/out-tsc
+
+# Dependencies
+/node_modules
+.angular/
+# IDEs and editors
+.idea/
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.swp
+*.swo
+*~
+*.sublime-workspace
+*.sublime-project
+
+# OS files
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Misc
+/.angular/cache
+/.sass-cache
+/connect.lock
+/coverage
+/libpeerconnection.log
+testem.log
+/typings
+
+# System files
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Environment files
+.env
+.env.local
+.env.development
+.env.staging
+.env.production
+
+# Build and package files
+*.tgz
+*.tar.gz
+
+# Lock files (uncomment ONE to ignore if you prefer the other)
+# package-lock.json
+# yarn.lock
+# pnpm-lock.yaml
+
+# Test results
+/test-results/
+/playwright-report/
+/e2e/results/
+
+# Firebase (if applicable)
+.firebase/
+firebase-debug.log
+
+# Sentry (if applicable)
+.sentryclirc
+
+# Certificates
+*.pem
+*.key
+*.crt

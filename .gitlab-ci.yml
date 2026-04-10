@@ -1,0 +1,287 @@
+# =============================================================================
+# GitLab CI/CD Pipeline — Angular Project
+# =============================================================================
+# Branch rules enforced:
+#   - Only 'dev' can merge into 'main' (requires non-author approval)
+#   - Only 'SN<N>...' branches can merge into 'dev'
+#   - All merge requests must pass build + test before merging
+#
+# PERFORMANCE NOTES
+# -----------------
+#   1. APT CACHE — Chromium .deb packages are cached so they only download
+#      once.  Subsequent runs install from disk (~5s vs ~90s).
+#
+#   2. npm CACHE — The install stage primes the .npm/ tarball cache.
+#      Downstream stages run their own `npm ci --prefer-offline` which
+#      resolves from the cached tarballs in ~5-10s with no network hits.
+#
+#   3. NO node_modules ARTIFACT — Uploading node_modules/ as an artifact
+#      triggers a known runner 18.x / helper version mismatch bug
+#      ("flag provided but not defined: -timeout").  Each stage runs
+#      its own fast npm ci against the cached .npm/ directory instead.
+#
+#   4. MERGED BUILD+TEST — Build and test run in a single job, eliminating
+#      the overhead of a second job startup + artifact download cycle.
+#      Lint runs in parallel in the same stage.
+# =============================================================================
+
+# ---------------------------------------------------------------------------
+# Global defaults
+# ---------------------------------------------------------------------------
+default:
+  image: node:20-bookworm
+  tags:
+    - USG-DOD-Global-Custom-Docker-Containers-BuildRunner1
+
+# ---------------------------------------------------------------------------
+# Stage order
+# ---------------------------------------------------------------------------
+stages:
+  - validate
+  - install
+  - build-and-test
+
+# ---------------------------------------------------------------------------
+# Variables
+# ---------------------------------------------------------------------------
+variables:
+  # Suppress Angular CLI analytics prompts in CI
+  NG_CLI_ANALYTICS: 'false'
+  # Chrome flags for headless test runner
+  CHROME_BIN: /usr/bin/chromium
+  PUPPETEER_SKIP_DOWNLOAD: 'true'
+  # npm network resilience for P1/DoD proxy environments
+  npm_config_fetch_retries: '5'
+  npm_config_fetch_retry_mintimeout: '20000'
+  # Point npm cache to a directory GitLab CI can persist across runs
+  npm_config_cache: '$CI_PROJECT_DIR/.npm'
+
+# ---------------------------------------------------------------------------
+# Global cache — persists the npm download cache AND Chromium .deb packages
+# across pipeline runs.
+# ---------------------------------------------------------------------------
+cache:
+  key: deps-${CI_COMMIT_REF_SLUG}
+  paths:
+    - .npm/
+    - .apt-cache/
+
+# ---------------------------------------------------------------------------
+# STAGE: validate
+# Enforce source → target branch naming rules on merge requests
+# ---------------------------------------------------------------------------
+validate-merge-request:
+  stage: validate
+  image: alpine:latest
+  cache: []
+  script:
+    - |
+      echo "============================================"
+      echo "  Merge Request Branch Validation"
+      echo "============================================"
+      echo "Source branch: $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME"
+      echo "Target branch: $CI_MERGE_REQUEST_TARGET_BRANCH_NAME"
+      echo ""
+
+      # ---- Rule 1: Only 'dev' may merge into 'main' ----
+      if [ "$CI_MERGE_REQUEST_TARGET_BRANCH_NAME" = "main" ]; then
+        if [ "$CI_MERGE_REQUEST_SOURCE_BRANCH_NAME" != "dev" ]; then
+          echo "FAILED: Merges into 'main' are only allowed from 'dev'."
+          echo "  Your source branch: $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME"
+          exit 1
+        fi
+        echo "PASSED: 'dev' → 'main' is allowed."
+      fi
+
+      # ---- Rule 2: Only 'SN<N>...' branches may merge into 'dev' ----
+      if [ "$CI_MERGE_REQUEST_TARGET_BRANCH_NAME" = "dev" ]; then
+        if ! echo "$CI_MERGE_REQUEST_SOURCE_BRANCH_NAME" | grep -qE '^SN[0-9]+'; then
+          echo "FAILED: Merges into 'dev' must come from a branch named 'SN<number>...'."
+          echo "  Your source branch: $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME"
+          echo ""
+          echo "  Acceptable examples:"
+          echo "    SN4_added_page"
+          echo "    SN1_removed_duplicate_info"
+          echo "    SN12_fix_header_bug"
+          exit 1
+        fi
+        echo "PASSED: Source branch matches 'SN<N>' pattern."
+      fi
+
+      echo ""
+      echo "All branch naming rules passed."
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+
+ensure-protected-files-not-changed:
+  stage: validate
+  image: alpine:latest
+  cache: []
+  script:
+    - apk add --no-cache git
+    - |
+      echo "============================================"
+      echo "  Pipeline Config Protection Check"
+      echo "============================================"
+      echo ""
+
+      PROTECTED_FILES=".gitlab-ci.yml eslint.config.js"
+      CHANGED=""
+
+      for file in $PROTECTED_FILES; do
+        if git diff --name-only HEAD~1 | grep -q "^${file}$"; then
+          CHANGED="$CHANGED $file"
+        fi
+      done
+
+      if [ -n "$CHANGED" ]; then
+        echo "══════════════════════════════════════════════════════"
+        echo "  BLOCKED: Protected file(s) modified in this MR:"
+        echo ""
+        for f in $CHANGED; do
+          echo "    - $f"
+        done
+        echo ""
+        echo "  These files are protected to prevent accidental"
+        echo "  pipeline or linting breakage. Contact the pipeline"
+        echo "  maintainer to approve or apply this change."
+        echo "══════════════════════════════════════════════════════"
+        exit 1
+      fi
+
+      echo "No changes to protected files — OK."
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+  allow_failure: false
+
+ensure-standalone-components:
+  stage: validate
+  image: alpine:latest
+  cache: []
+  script:
+    - |
+      echo "============================================"
+      echo "  Standalone Component Enforcement"
+      echo "============================================"
+      echo ""
+
+      VIOLATIONS=""
+
+      # Recursively search all .ts files under src/ for standalone: false
+      for file in $(find src -name "*.ts" -type f); do
+        if grep -qE 'standalone\s*:\s*false' "$file"; then
+          VIOLATIONS="$VIOLATIONS $file"
+        fi
+      done
+
+      if [ -n "$VIOLATIONS" ]; then
+        echo "══════════════════════════════════════════════════════"
+        echo "  BLOCKED: Non-standalone component(s) detected."
+        echo ""
+        for f in $VIOLATIONS; do
+          echo "    - $f"
+          grep -nE 'standalone\s*:\s*false' "$f" | while read -r line; do
+            echo "        $line"
+          done
+        done
+        echo ""
+        echo "  All components must be standalone (Angular 21 default)."
+        echo "  Remove 'standalone: false' from the decorator(s) above."
+        echo "══════════════════════════════════════════════════════"
+        exit 1
+      fi
+
+      echo "All components are standalone — OK."
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH == "dev"
+    - if: $CI_COMMIT_BRANCH == "main"
+  allow_failure: false
+
+# ---------------------------------------------------------------------------
+# STAGE: install
+# Primes the .npm/ tarball cache so downstream stages can run
+# `npm ci --prefer-offline` quickly.  No artifacts are uploaded —
+# this avoids the runner helper -timeout bug entirely.
+# ---------------------------------------------------------------------------
+install-dependencies:
+  stage: install
+  script:
+    - echo "Installing dependencies (priming .npm/ cache)..."
+    - npm ci --no-audit --prefer-offline
+  retry:
+    max: 2
+    when: script_failure
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH == "dev"
+    - if: $CI_COMMIT_BRANCH == "main"
+
+# ---------------------------------------------------------------------------
+# STAGE: build-and-test
+# Lint, build, and test all run in the same stage.  Lint runs in parallel
+# with build-and-test since they are independent jobs in the same stage.
+# ---------------------------------------------------------------------------
+
+# ── Lint ──────────────────────────────────────────────────────────────────
+# Runs Angular ESLint — catches code quality issues (not formatting).
+# No Chromium needed, so this is a lightweight job.
+# ---------------------------------------------------------------------------
+lint:
+  stage: build-and-test
+  needs: ['install-dependencies']
+  script:
+    - npm ci --no-audit --prefer-offline
+    - echo "Running linter..."
+    - npx ng lint
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH == "dev"
+    - if: $CI_COMMIT_BRANCH == "main"
+  allow_failure: true
+
+# ── Build + Test ──────────────────────────────────────────────────────────
+# Combines build + test into one job to avoid a second job startup cycle.
+# Chromium .deb packages are cached — only downloaded on the first run.
+# Runs its own `npm ci` from the .npm/ cache (~5-10s, no network).
+# ---------------------------------------------------------------------------
+build-and-test:
+  stage: build-and-test
+  needs: ['install-dependencies']
+  before_script:
+    # ── Install dependencies from cached .npm/ tarballs ───────────────────
+    - npm ci --no-audit --prefer-offline
+
+    # ── Install Chromium from cache or download once ──────────────────────
+    - |
+      mkdir -p .apt-cache
+      if [ -n "$(ls .apt-cache/*.deb 2>/dev/null)" ]; then
+        echo "Installing Chromium from cached .deb packages..."
+        dpkg -i .apt-cache/*.deb 2>/dev/null || true
+        apt-get install -f -y -qq 2>/dev/null || true
+      else
+        echo "First run — downloading Chromium (will be cached for next time)..."
+        apt-get update -qq
+        apt-get install -y -qq -d -o Dir::Cache::Archives="$(pwd)/.apt-cache" chromium chromium-common
+        dpkg -i .apt-cache/*.deb 2>/dev/null || true
+        apt-get install -f -y -qq 2>/dev/null || true
+      fi
+    - export CHROME_BIN=$(which chromium || which chromium-browser)
+  script:
+    # ── Build ─────────────────────────────────────────────────────────────
+    - echo "Building Angular app (production)..."
+    - npx ng build --configuration=production
+
+    # ── Test ──────────────────────────────────────────────────────────────
+    - echo "Running unit tests..."
+    - |
+      if find src -name "*.spec.ts" | grep -q .; then
+        npx ng test --watch=false --browsers=ChromeHeadlessNoSandbox
+      else
+        echo "No spec files found — skipping tests."
+      fi
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH == "dev"
+    - if: $CI_COMMIT_BRANCH == "main"
+  allow_failure: false

@@ -4,32 +4,37 @@
     <button class="sms-btn" [class.active]="activeView==='summary'"  (click)="activeView='summary'">Summary</button>
     <button class="sms-btn" [class.active]="activeView==='detailed'" (click)="activeView='detailed'">Detailed</button>
     <button class="sms-btn" [class.active]="activeView==='warnings'" (click)="activeView='warnings'">
-      Warnings <span *ngIf="warningCount > 0" class="warn-badge">{{ warningCount }}</span>
-    </button>
-  </div>
+      Warnings @if (warningCount() > 0) {
+      <span class="warn-badge">{{ warningCount() }}</span>
+    }
+  </button>
+</div>
 
-  <div class="page-section">
+<div class="page-section">
 
-    <!-- SUMMARY -->
-    <ng-container *ngIf="activeView === 'summary'">
-      <table class="status-table">
-        <thead>
-          <tr><th>Sta</th><th>Store</th><th>Pwr</th><th>Status</th></tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let st of stations">
+  <!-- SUMMARY -->
+  @if (activeView === 'summary') {
+    <table class="status-table">
+      <thead>
+        <tr><th>Sta</th><th>Store</th><th>Pwr</th><th>Status</th></tr>
+      </thead>
+      <tbody>
+        @for (st of stations(); track st.id) {
+          <tr>
             <td>{{ st.id }}</td>
             <td>{{ st.storeType || '--' }}</td>
             <td><span [class.pwr-on]="st.storePower">{{ st.storePower ? 'ON' : '--' }}</span></td>
             <td><span class="status-chip" [ngClass]="getStatusClass(st.storeStatus)">{{ st.storeStatus || '--' }}</span></td>
           </tr>
-        </tbody>
-      </table>
-    </ng-container>
+        }
+      </tbody>
+    </table>
+  }
 
-    <!-- DETAILED -->
-    <ng-container *ngIf="activeView === 'detailed'">
-      <div *ngFor="let st of stations" class="detail-card">
+  <!-- DETAILED -->
+  @if (activeView === 'detailed') {
+    @for (st of stations(); track st.id) {
+      <div class="detail-card">
         <div class="d-header">Sta {{ st.id }} &mdash; {{ st.storeType || 'Empty' }}</div>
         <div class="d-grid">
           <span class="d-label">Status</span>
@@ -37,26 +42,35 @@
           <span class="d-label">Launcher</span><span>{{ st.launcher || 'N/A' }}</span>
           <span class="d-label">Orientation</span><span>Back to Front</span>
         </div>
-        <div *ngIf="st.substations && st.substations.length > 0" class="sub-list">
-          <div *ngFor="let sub of st.substations" class="sub-row">
-            <span class="sub-id">{{ sub.id }}</span>
-            <span class="sub-type">{{ sub.storeType }}</span>
-            <span class="status-chip" [ngClass]="getStatusClass(sub.storeStatus)">{{ sub.storeStatus }}</span>
+        @if (st.substations && st.substations.length > 0) {
+          <div class="sub-list">
+            @for (sub of st.substations; track sub.id) {
+              <div class="sub-row">
+                <span class="sub-id">{{ sub.id }}</span>
+                <span class="sub-type">{{ sub.storeType }}</span>
+                <span class="status-chip" [ngClass]="getStatusClass(sub.storeStatus)">{{ sub.storeStatus }}</span>
+              </div>
+            }
           </div>
-        </div>
+        }
       </div>
-    </ng-container>
+    }
+  }
 
-    <!-- WARNINGS -->
-    <ng-container *ngIf="activeView === 'warnings'">
-      <div *ngIf="warningCount === 0" class="no-selection">No active warnings or cautions.</div>
-      <div *ngFor="let w of warnings" class="warning-card"
-           [class.is-warning]="w.level === 'WARNING'"
-           [class.is-caution]="w.level === 'CAUTION'">
+  <!-- WARNINGS -->
+  @if (activeView === 'warnings') {
+    @if (warningCount() === 0) {
+      <div class="no-selection">No active warnings or cautions.</div>
+    }
+    @for (w of warnings(); track w) {
+      <div class="warning-card"
+        [class.is-warning]="w.level === 'WARNING'"
+        [class.is-caution]="w.level === 'CAUTION'">
         <span class="w-level">{{ w.level }}</span>
         <span class="w-msg">{{ w.msg }}</span>
       </div>
-    </ng-container>
+    }
+  }
 
-  </div>
+</div>
 </div>

@@ -1,18 +1,60 @@
+<header class="top-menubar">
+  <div class="menubar" ngMenuBar>
+    <button class="menubar-trigger" ngMenuItem value="File" ngMenuTrigger [menu]="fileMenu">
+      File
+    </button>
+
+    <button class="menubar-trigger" ngMenuItem value="View" ngMenuTrigger [menu]="viewMenu">
+      View
+    </button>
+
+    <button class="menubar-trigger" ngMenuItem value="About" type="button" (click)="openAbout()">
+      About
+    </button>
+  </div>
+
+  <div ngMenu #fileMenu="ngMenu" class="menu-panel">
+    <ng-template ngMenuContent>
+      <button class="menu-item" ngMenuItem value="New" (click)="newSession()">New</button>
+      <button class="menu-item" ngMenuItem value="Save" (click)="saveSession()">Save</button>
+      <div class="menu-separator" role="separator" aria-orientation="horizontal"></div>
+      <button class="menu-item" ngMenuItem value="Exit" (click)="exitApp()">Exit</button>
+    </ng-template>
+  </div>
+  
+  <div ngMenu #viewMenu="ngMenu" class="menu-panel">
+    <ng-template ngMenuContent>
+      <button class="menu-item" ngMenuItem value="Air-Ground" (click)="goAirGround()">Air-Ground</button>
+      <button class="menu-item" ngMenuItem value="Air-Ground" (click)="goProfiles()">Profiles</button>
+      <button class="menu-item" ngMenuItem value="Status" (click)="goStatus()">Status</button>
+      <button class="menu-item" ngMenuItem value="Status" (click)="goSelJettison()">Sel. Jettison</button>
+      <button class="menu-item" ngMenuItem value="Inventory" (click)="goInventory()">Inventory</button>
+    </ng-template>
+  </div> 
+</header>
+
+
+
 <div class="sms-shell">
   <app-loadout-display></app-loadout-display>
   <div class="work-area">
     <div class="indicators-bar">
       <span class="indicator-label">LNK</span>
-      <span class="indicator-dot" [ngClass]="getLnkClass()"></span>
+      <span class="indicator-dot" [ngClass]="lnkClass()"></span>
       <span class="indicator-label ml-8">STS</span>
-      <span class="indicator-dot" [ngClass]="getStsClass()"></span>
+      <span class="indicator-dot" [ngClass]="stsClass()"></span>
     </div>
     <router-outlet></router-outlet>
+    <nav class="system-mode-area">
+      @for (nav of navItems; track nav) {
+        <a
+          [routerLink]="nav.path"
+          routerLinkActive="active"
+          class="mode-btn">{{ nav.label }}</a>
+      }
+    </nav>
   </div>
-  <nav class="system-mode-area">
-    <a *ngFor="let nav of navItems"
-       [routerLink]="nav.path"
-       routerLinkActive="active"
-       class="mode-btn">{{ nav.label }}</a>
-  </nav>
+  
+  <span class="sms-spacer"></span>
+  
 </div>

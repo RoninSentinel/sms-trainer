@@ -1,88 +1,428 @@
-<div class="title-bar">Air To Ground: Select Target</div>
-<div class="tgt-page">
+<!--
+  select-target.component.html
+  ============================
+  Template for the "Air To Ground: Select Target" page of the SMS trainer.
 
-  <!-- Cross-Cued Targets section -->
-  <div class="tgt-section-label">Cross-Cued Targets</div>
-  <div class="cctgp-card" *ngIf="crossCuedTarget">
-    <div class="cctgp-info">
-      <div class="cctgp-row">
-        <span class="cctgp-source">{{ crossCuedTarget.source }}</span>
-        <span class="cctgp-tag">[{{ crossCuedTarget.source }}]</span>
-      </div>
-      <div class="cctgp-row">
-        <span>{{ crossCuedTarget.lat }}</span>
-        <span>{{ crossCuedTarget.alt }} m</span>
-      </div>
-      <div class="cctgp-row">
-        <span>{{ crossCuedTarget.lon }}</span>
-        <span>[{{ crossCuedTarget.altRef }}]</span>
-      </div>
-    </div>
-    <div class="cctgp-btns">
-      <button class="sms-btn cctgp-btn"
-              [class.active]="isSelected(crossCuedTarget.name)"
-              (click)="selectTarget(crossCuedTarget.name)">
-        {{ isSelected(crossCuedTarget.name) ? 'Deselect' : 'Select' }}
-      </button>
-      <button class="sms-btn cctgp-btn" (click)="updateTarget()">Target<br>Update</button>
-    </div>
-  </div>
-  <div class="cctgp-empty" *ngIf="!crossCuedTarget">
-    No cross-cued targets available.
-  </div>
+  This template implements three main views controlled by the `activeView` property:
 
-  <!-- Saved Targets section -->
-  <div class="tgt-section-label" style="margin-top: 12px">Saved Targets</div>
-  <div class="saved-area">
-    <div class="saved-list">
-      <div *ngFor="let t of visibleTargets"
-           class="saved-row"
-           [class.saved-selected]="isSelected(t.name)"
-           (click)="selectTarget(t.name)">
-        <div class="saved-name">{{ t.name }}</div>
-        <div class="saved-coords">
-          <span>{{ t.lat }}</span>
-          <span>{{ t.lon }}</span>
-          <span>{{ t.alt }} [{{ t.altRef }}]</span>
+  1. SELECT VIEW:
+     - Title bar: "Air To Ground: Select Target"
+     - Cross-Cued Targets section with CCTGP card, store-assignment button,
+       and Auto/Manual CCTGP mode toggle
+     - Saved Targets section with scrollable list, Select/Modify buttons per row
+     - Footer: "Create Target" button (left), "True"/"Mag" heading toggle (right)
+     - Store-assignment popup overlay when assigning stores to a target
+     - Animated dashed border on the selected target row
+
+  2. CREATE VIEW ('create'):
+     - Title bar: "Air To Ground: Create Target"
+     - Source button (Manual/TGP) with chooser popup
+     - Name button (opens keyboard)
+     - Coordinates button (opens QWERTY keyboard with MGRS/UTM/LL format selector)
+     - Elevation button (opens keyboard with Feet/Meters and MSL-84/HAE-84/MSL-96)
+     - Control area: "Delete & Exit" (guarded), "Create & Exit", "Target Update"
+     - Shared on-screen keyboard component when entering data
+
+  3. MODIFY VIEW ('modify'):
+     - Same form as Create but with "Modify & Exit" and guarded "Delete & Exit"
+-->
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!--  SELECT TARGET VIEW                                                    -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+@if (activeView === 'select') {
+  <div class="title-bar">Air To Ground: Select Target</div>
+  <div class="tgt-page">
+    <!-- ── Cross-Cued Targets Section ─────────────────────────────────── -->
+    <div class="tgt-section-label">Cross-Cued Targets</div>
+    <div class="cctgp-card" [class.cctgp-selected]="isSelected(crossCuedTarget.name)">
+      <!-- Target info: name, coordinates, elevation, source -->
+      <div class="cctgp-info">
+        <div class="cctgp-col">
+          <span class="cctgp-text cctgp-name">{{ crossCuedTarget.name }}</span>
+          <span class="cctgp-text">{{ crossCuedTarget.lat }}</span>
+          <span class="cctgp-text">{{ getCctgpElevDisplay() }}</span>
         </div>
-        <div class="saved-source">{{ t.source }}</div>
+        <div class="cctgp-col cctgp-source-col">
+          <span class="cctgp-text">[{{ crossCuedTarget.source }}]</span>
+        </div>
+      </div>
+
+      <!-- Store assignment button: shows assigned stores or "Select" -->
+      <button
+        class="sms-btn cctgp-btn select-btn"
+        [class.active]="hasAssignedStores(crossCuedTarget.name)"
+        (click)="openStorePopup(crossCuedTarget.name)"
+      >
+        {{ getAssignedStoresLabel(crossCuedTarget.name) }}
+      </button>
+
+      <!-- Auto / Manual CCTGP toggle -->
+      <button class="sms-btn cctgp-btn mode-btn" [class.mode-active]="cctgpMode !== 'None'" (click)="toggleCctgpMode()">
+        {{ cctgpMode === 'None' ? 'Manual' : cctgpMode }}<br />CCTGP
+      </button>
+    </div>
+
+    <!-- ── Saved Targets Section ──────────────────────────────────────── -->
+    <div class="tgt-section-label saved-label">Saved Targets</div>
+    <div class="saved-area">
+      <div class="saved-list">
+        @if (targets().length === 0) {
+          <div class="no-targets-msg">No Saved Targets</div>
+        }
+
+        @for (t of visibleTargets(); track t.name) {
+          <div class="saved-row" [class.saved-selected]="isSelected(t.name)">
+            <!-- Target data -->
+            <div class="saved-info">
+              <div class="saved-info-top">
+                <span class="saved-name">{{ t.name }}</span>
+                <span class="saved-source">[{{ t.source }}]</span>
+              </div>
+              <div class="saved-info-bottom">
+                <span class="saved-coord">{{ t.lat }}</span>
+              </div>
+              <div class="saved-info-bottom">
+                <span class="saved-coord">{{ t.alt }} {{ elevUnit }} [{{ t.altRef }}]</span>
+              </div>
+            </div>
+
+            <!-- Action buttons -->
+            <div class="saved-btns">
+              <button
+                class="sms-btn saved-action-btn"
+                [class.active]="isSelected(t.name)"
+                (click)="selectTarget(t.name); $event.stopPropagation()"
+              >
+                {{ isSelected(t.name) ? getAssignedStoresLabel(t.name) : 'Select' }}
+              </button>
+              <button
+                class="sms-btn saved-action-btn modify-btn"
+                (click)="modifyTarget(t.name); $event.stopPropagation()"
+              >
+                Modify
+              </button>
+            </div>
+          </div>
+        }
+      </div>
+
+      <!-- Scroll arrows -->
+      <div class="scroll-btns">
+        <button class="sms-btn scroll-btn" (click)="scrollUp()" [disabled]="scrollOffset === 0">&#8679;</button>
+        <div class="scroll-spacer"></div>
+        <button
+          class="sms-btn scroll-btn"
+          (click)="scrollDown()"
+          [disabled]="scrollOffset >= targets().length - pageSize"
+        >
+          &#8681;
+        </button>
       </div>
     </div>
-    <div class="scroll-btns">
-      <button class="sms-btn scroll-btn" (click)="scrollUp()" [disabled]="scrollOffset === 0">&#8679;</button>
-      <button class="sms-btn scroll-btn" (click)="scrollDown()" [disabled]="scrollOffset + pageSize >= targets.length">&#8681;</button>
+
+    <!-- ── Footer: Create Target + Heading Toggle ─────────────────────── -->
+    <div class="tgt-footer">
+      <button class="sms-btn create-btn" (click)="openCreateTarget()">Create Target</button>
+      <div class="footer-spacer"></div>
+      <button class="sms-btn heading-btn" (click)="toggleHeadingRef()">
+        {{ headingRef }}
+      </button>
     </div>
-  </div>
 
-  <!-- Bottom bar -->
-  <div class="tgt-footer">
-    <button class="sms-btn create-btn" (click)="showCreateForm = !showCreateForm">Create Target</button>
-  </div>
+    <!-- ── Store Assignment Popup Overlay ──────────────────────────────── -->
+    @if (showStorePopup) {
+      <div
+        class="store-popup-overlay"
+        tabindex="0"
+        role="none"
+        (click)="closeStorePopup()"
+        (keydown.enter)="closeStorePopup()"
+      >
+        <div
+          class="store-popup"
+          tabindex="-1"
+          role="dialog"
+          (click)="$event.stopPropagation()"
+          (keydown)="$event.stopPropagation()"
+        >
+          <div class="store-popup-title">Stores</div>
 
-  <!-- Create Target form (inline overlay) -->
-  <div class="create-form" *ngIf="showCreateForm">
-    <div class="create-form-inner">
-      <div class="create-title">Create Target</div>
-      <div class="cf-row"><span class="cf-label">Name</span><input class="sms-input" [(ngModel)]="newTarget.name" placeholder="TARGET XX" /></div>
-      <div class="cf-row"><span class="cf-label">Latitude</span><input class="sms-input" [(ngModel)]="newTarget.lat" placeholder="N 44 40 30.100" /></div>
-      <div class="cf-row"><span class="cf-label">Longitude</span><input class="sms-input" [(ngModel)]="newTarget.lon" placeholder="W 3 20 09.233" /></div>
-      <div class="cf-row">
-        <span class="cf-label">Altitude</span>
-        <input class="sms-input small" type="number" [(ngModel)]="newTarget.alt" />
-        <button class="sms-btn small" [class.active]="newTarget.altRef==='MSL'" (click)="newTarget.altRef='MSL'">MSL</button>
-        <button class="sms-btn small" [class.active]="newTarget.altRef==='AGL'" (click)="newTarget.altRef='AGL'">AGL</button>
+          <div class="store-popup-grid">
+            @for (group of groupedStores(); track group.stationId) {
+              <div class="store-column">
+                @for (store of group.stores; track store.id) {
+                  <button
+                    class="sms-btn store-popup-btn"
+                    [class.store-assigned]="store.assigned"
+                    (click)="toggleStoreAssignment(store.id)"
+                  >
+                    {{ store.label.split(' ')[0] }}<br />{{ store.label.split(' ').slice(1).join(' ') }}
+                  </button>
+                }
+              </div>
+            }
+          </div>
+
+          <div class="store-popup-actions">
+            <button class="sms-btn store-popup-action" (click)="selectAllStores()">Select All</button>
+            <button class="sms-btn store-popup-action" (click)="closeStorePopup()">Done</button>
+          </div>
+        </div>
       </div>
-      <div class="cf-row">
-        <span class="cf-label">Source</span>
-        <button class="sms-btn small" [class.active]="newTarget.source==='Manual'" (click)="newTarget.source='Manual'">Manual</button>
-        <button class="sms-btn small" [class.active]="newTarget.source==='TGP'" (click)="newTarget.source='TGP'">TGP</button>
-        <button class="sms-btn small" [class.active]="newTarget.source==='SADL'" (click)="newTarget.source='SADL'">SADL</button>
+    }
+  </div>
+}
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!--  CREATE TARGET VIEW                                                    -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+@if (activeView === 'create') {
+  <div class="title-bar">Air To Ground: Create Target</div>
+
+  @if (keyboardMode === 'hidden') {
+    <!-- ── Create Target Form ───────────────────────────────────────── -->
+    <div class="create-page">
+      <!-- Left control buttons (matches demo layout) -->
+      <div class="create-controls">
+        <button class="sms-btn create-ctrl-btn guarded-btn" [class.armed]="deleteGuardArmed" (click)="deleteAndExit()">
+          Delete<br />&amp; Exit
+        </button>
+        <div class="ctrl-spacer"></div>
+        <button class="sms-btn create-ctrl-btn" [disabled]="!canCreateAndExit()" (click)="createAndExit()">
+          Create<br />&amp; Exit
+        </button>
+        <button
+          class="sms-btn create-ctrl-btn target-update-btn"
+          [disabled]="newTarget.source !== 'TGP'"
+          (click)="targetUpdate()"
+        >
+          Target<br />Update
+        </button>
       </div>
-      <div class="cf-actions">
-        <button class="sms-btn" (click)="createTarget()" [disabled]="!newTarget.name">Save</button>
-        <button class="sms-btn" (click)="showCreateForm = false">Cancel</button>
+
+      <!-- Form fields -->
+      <div class="create-fields">
+        <!-- Source -->
+        <div class="create-field-row">
+          <span class="create-label">Source</span>
+          <button class="sms-btn create-field-btn" (click)="showSourcePopup = true">
+            {{ newTarget.source }}
+          </button>
+        </div>
+
+        <!-- Name -->
+        <div class="create-field-row">
+          <span class="create-label">Name</span>
+          <button class="sms-btn create-field-btn" (click)="openNameKeyboard()">
+            {{ newTarget.name || UNSET_LABEL }}
+          </button>
+        </div>
+
+        <!-- Coordinates -->
+        <div class="create-field-row">
+          <span class="create-label">Coordinates</span>
+          <button
+            class="sms-btn create-field-btn"
+            [class.unset-field]="!newTarget.lat"
+            [disabled]="newTarget.source === 'TGP'"
+            (click)="openCoordKeyboard()"
+          >
+            {{ newTarget.lat || UNSET_LABEL }}
+          </button>
+        </div>
+
+        <!-- Elevation -->
+        <div class="create-field-row">
+          <span class="create-label">Elevation</span>
+          <button
+            class="sms-btn create-field-btn"
+            [class.unset-field]="!newTarget.alt"
+            [disabled]="newTarget.source === 'TGP'"
+            (click)="openElevKeyboard()"
+          >
+            {{ newTarget.alt ? newTarget.alt + ' ' + elevUnit + ' [' + elevRef + ']' : UNSET_LABEL }}
+          </button>
+        </div>
       </div>
+
+      <!-- Choose Target Source Popup -->
+      @if (showSourcePopup) {
+        <div
+          class="source-popup-overlay"
+          tabindex="0"
+          role="none"
+          (click)="showSourcePopup = false"
+          (keydown.enter)="showSourcePopup = false"
+        >
+          <div
+            class="source-popup"
+            tabindex="-1"
+            role="dialog"
+            (click)="$event.stopPropagation()"
+            (keydown)="$event.stopPropagation()"
+          >
+            <div class="source-popup-title">Choose Target Source</div>
+            <div class="source-popup-btns">
+              <button
+                class="sms-btn source-opt"
+                [class.source-selected]="newTarget.source === 'TGP'"
+                (click)="setSource('TGP')"
+              >
+                TGP
+              </button>
+              <button
+                class="sms-btn source-opt"
+                [class.source-selected]="newTarget.source === 'Manual'"
+                (click)="setSource('Manual')"
+              >
+                MANUAL
+              </button>
+            </div>
+          </div>
+        </div>
+      }
     </div>
-  </div>
+  }
 
-</div>
+  <!-- ═══════════════════════════════════════════════════════════════════ -->
+  <!--  ON-SCREEN KEYBOARD (shared component)                             -->
+  <!-- ═══════════════════════════════════════════════════════════════════ -->
+  @if (keyboardMode !== 'hidden') {
+    <app-keyboard-popup
+      [mode]="keyboardMode"
+      [initialValue]="keyboardBuffer"
+      [coordFormat]="coordFormat"
+      [elevUnit]="elevUnit"
+      [elevRef]="elevRef"
+      (ok)="onKeyboardOk($event)"
+      (cancelled)="onKeyboardCancel()"
+      (coordFormatCycle)="cycleCoordFormat()"
+      (elevUnitToggle)="toggleElevUnit()"
+      (elevRefCycle)="cycleElevRef()"
+    />
+  }
+}
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!--  MODIFY TARGET VIEW                                      -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+@if (activeView === 'modify') {
+  <div class="title-bar">Air To Ground: Modify Target</div>
+
+  @if (keyboardMode === 'hidden') {
+    <div class="create-page">
+      <div class="create-controls">
+        <button
+          class="sms-btn create-ctrl-btn guarded-btn"
+          [class.armed]="deleteGuardArmed"
+          (click)="guardedDeleteAndExit()"
+        >
+          Delete<br />&amp; Exit
+        </button>
+        <div class="ctrl-spacer"></div>
+        <button class="sms-btn create-ctrl-btn" [disabled]="!canModifyAndExit()" (click)="modifyAndExit()">
+          Modify<br />&amp; Exit
+        </button>
+        <button
+          class="sms-btn create-ctrl-btn target-update-btn"
+          [disabled]="newTarget.source !== 'TGP'"
+          (click)="targetUpdate()"
+        >
+          Target<br />Update
+        </button>
+      </div>
+
+      <div class="create-fields">
+        <div class="create-field-row">
+          <span class="create-label">Source</span>
+          <button class="sms-btn create-field-btn" (click)="showSourcePopup = true">
+            {{ newTarget.source }}
+          </button>
+        </div>
+
+        <div class="create-field-row">
+          <span class="create-label">Name</span>
+          <button class="sms-btn create-field-btn" (click)="openNameKeyboard()">
+            {{ newTarget.name || UNSET_LABEL }}
+          </button>
+        </div>
+
+        <div class="create-field-row">
+          <span class="create-label">Coordinates</span>
+          <button
+            class="sms-btn create-field-btn"
+            [class.unset-field]="!newTarget.lat"
+            [disabled]="newTarget.source === 'TGP'"
+            (click)="openCoordKeyboard()"
+          >
+            {{ newTarget.lat || UNSET_LABEL }}
+          </button>
+        </div>
+
+        <div class="create-field-row">
+          <span class="create-label">Elevation</span>
+          <button
+            class="sms-btn create-field-btn"
+            [class.unset-field]="!newTarget.alt"
+            [disabled]="newTarget.source === 'TGP'"
+            (click)="openElevKeyboard()"
+          >
+            {{ newTarget.alt ? newTarget.alt + ' ' + elevUnit + ' [' + elevRef + ']' : UNSET_LABEL }}
+          </button>
+        </div>
+      </div>
+
+      @if (showSourcePopup) {
+        <div
+          class="source-popup-overlay"
+          tabindex="0"
+          role="none"
+          (click)="showSourcePopup = false"
+          (keydown.enter)="showSourcePopup = false"
+        >
+          <div
+            class="source-popup"
+            tabindex="-1"
+            role="dialog"
+            (click)="$event.stopPropagation()"
+            (keydown)="$event.stopPropagation()"
+          >
+            <div class="source-popup-title">Choose Target Source</div>
+            <div class="source-popup-btns">
+              <button
+                class="sms-btn source-opt"
+                [class.source-selected]="newTarget.source === 'TGP'"
+                (click)="setSource('TGP')"
+              >
+                TGP
+              </button>
+              <button
+                class="sms-btn source-opt"
+                [class.source-selected]="newTarget.source === 'Manual'"
+                (click)="setSource('Manual')"
+              >
+                MANUAL
+              </button>
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+  }
+
+  @if (keyboardMode !== 'hidden') {
+    <app-keyboard-popup
+      [mode]="keyboardMode"
+      [initialValue]="keyboardBuffer"
+      [coordFormat]="coordFormat"
+      [elevUnit]="elevUnit"
+      [elevRef]="elevRef"
+      (ok)="onKeyboardOk($event)"
+      (cancel)="onKeyboardCancel()"
+      (coordFormatCycle)="cycleCoordFormat()"
+      (elevUnitToggle)="toggleElevUnit()"
+      (elevRefCycle)="cycleElevRef()"
+    />
+  }
+}

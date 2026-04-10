@@ -1,0 +1,67 @@
+<!--
+  Numpad Popup Template
+  =====================
+  Reusable on-screen numeric keypad matching Figure 1-51.
+
+  Every key is disabled when pressing it cannot lead to a valid value
+  within [min, max].  OK is only enabled when the buffer is already valid.
+-->
+
+<div class="sms-popup-overlay" tabindex="0" role="none" (click)="cancel()" (keydown.enter)="cancel()">
+  <div
+    class="numpad-popup"
+    tabindex="-1"
+    role="dialog"
+    (click)="$event.stopPropagation()"
+    (keydown)="$event.stopPropagation()"
+  >
+    <!-- Header: title with valid range -->
+    <div class="numpad-title">{{ title }} [{{ min }}, {{ max }}]</div>
+
+    <!-- Display: shows current buffer value -->
+    <div class="numpad-display">
+      <span class="numpad-display-text">{{ buffer || '0' }}</span>
+    </div>
+
+    <!-- Keypad grid (5 columns × 4 rows) -->
+    <div class="numpad-grid">
+      <!-- Row 1: 7 8 9 ← Clear -->
+      <button class="numpad-key" [disabled]="!isDigitEnabled('7')" (click)="press('7')">7</button>
+      <button class="numpad-key" [disabled]="!isDigitEnabled('8')" (click)="press('8')">8</button>
+      <button class="numpad-key" [disabled]="!isDigitEnabled('9')" (click)="press('9')">9</button>
+      <button class="numpad-key numpad-backspace" (click)="backspace()">&#8592;</button>
+      <button class="numpad-key numpad-action" (click)="clear()">Clear</button>
+
+      <!-- Row 2: 4 5 6 -->
+      <button class="numpad-key" [disabled]="!isDigitEnabled('4')" (click)="press('4')">4</button>
+      <button class="numpad-key" [disabled]="!isDigitEnabled('5')" (click)="press('5')">5</button>
+      <button class="numpad-key" [disabled]="!isDigitEnabled('6')" (click)="press('6')">6</button>
+      <span class="numpad-spacer"></span>
+      <span class="numpad-spacer"></span>
+
+      <!-- Row 3: 1 2 3  OK -->
+      <button class="numpad-key" [disabled]="!isDigitEnabled('1')" (click)="press('1')">1</button>
+      <button class="numpad-key" [disabled]="!isDigitEnabled('2')" (click)="press('2')">2</button>
+      <button class="numpad-key" [disabled]="!isDigitEnabled('3')" (click)="press('3')">3</button>
+      <span class="numpad-spacer"></span>
+      <button class="numpad-key numpad-action numpad-ok" [disabled]="!isOkEnabled" (click)="ok()">OK</button>
+
+      <!-- Row 4: [-/. conditionally] 0 [. conditionally]  Cancel -->
+      @if (allowNegative) {
+        <button class="numpad-key" [disabled]="!isNegativeEnabled" (click)="toggleNegative()">&minus;</button>
+      } @else if (allowDecimal) {
+        <button class="numpad-key" [disabled]="!isDecimalEnabled" (click)="decimal()">.</button>
+      } @else {
+        <span class="numpad-spacer"></span>
+      }
+      <button class="numpad-key" [disabled]="!isDigitEnabled('0')" (click)="press('0')">0</button>
+      @if (allowNegative && allowDecimal) {
+        <button class="numpad-key" [disabled]="!isDecimalEnabled" (click)="decimal()">.</button>
+      } @else {
+        <span class="numpad-spacer"></span>
+      }
+      <span class="numpad-spacer"></span>
+      <button class="numpad-key numpad-action numpad-cancel" (click)="cancel()">Cancel</button>
+    </div>
+  </div>
+</div>

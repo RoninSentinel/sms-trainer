@@ -1,0 +1,118 @@
+<!--
+  keyboard-popup.component.html
+  =============================
+  Reusable on-screen QWERTY keyboard matching the GSMS keyboard windows
+  (Figures 1-87, 1-88, 1-89, 1-90 from TO 1Q-9(M)A-34-1-1).
+
+  The header bar adapts to the current mode:
+    - 'coordinates' → coord-format button (opens popup) + input display
+    - 'elevation'   → "Elevation:" label + input display + unit/ref toggles
+    - 'name'        → "Name:" label + input display
+
+  The "Choose Coordinate System" popup (Figure 1-89) is rendered inside
+  the keyboard page as an overlay when showCoordSystemPopup is true.
+-->
+
+<div class="keyboard-page">
+  <!-- Keyboard header bar (context-dependent) -->
+  <div class="kb-header">
+    @if (mode === 'coordinates') {
+      <button class="sms-btn kb-format-btn" (click)="openCoordSystemPopup()">
+        {{ coordFormat }}
+      </button>
+      <div class="kb-input-display">{{ buffer }}<span class="kb-cursor">|</span></div>
+    }
+    @if (mode === 'elevation') {
+      <span class="kb-elev-label">Elevation:</span>
+      <div class="kb-input-display">{{ buffer }}<span class="kb-cursor">|</span></div>
+      <button class="sms-btn kb-unit-btn" (click)="elevUnitToggle.emit()">
+        {{ elevUnit }}
+      </button>
+      <button class="sms-btn kb-ref-btn" (click)="elevRefCycle.emit()">
+        {{ elevRef }}
+      </button>
+    }
+    @if (mode === 'name') {
+      <span class="kb-elev-label">Name:</span>
+      <div class="kb-input-display">{{ buffer }}<span class="kb-cursor">|</span></div>
+    }
+  </div>
+
+  <!-- Key rows -->
+  <div class="kb-keys">
+    <!-- Row 1: numbers -->
+    <div class="kb-row">
+      @for (key of keyRows[0]; track key) {
+        <button class="kb-key" [disabled]="isKeyDisabled(key)" (click)="onKeyPress(key)">{{ key }}</button>
+      }
+      <button class="kb-key kb-action-key" (click)="onKeyDelete()">Del</button>
+    </div>
+
+    <!-- Row 2: QWERTYUIOP -->
+    <div class="kb-row">
+      @for (key of keyRows[1]; track key) {
+        <button class="kb-key" [disabled]="isKeyDisabled(key)" (click)="onKeyPress(key)">{{ key }}</button>
+      }
+      <button class="kb-key kb-action-key" (click)="onKeyClear()">Clr</button>
+    </div>
+
+    <!-- Row 3: ASDFGHJKL -->
+    <div class="kb-row">
+      @for (key of keyRows[2]; track key) {
+        <button class="kb-key" [disabled]="isKeyDisabled(key)" (click)="onKeyPress(key)">{{ key }}</button>
+      }
+      <button class="kb-key kb-action-key" (click)="onKeyDelete()">&#8592;</button>
+    </div>
+
+    <!-- Row 4: ZXCVBNM-. -->
+    <div class="kb-row">
+      @for (key of keyRows[3]; track key) {
+        <button class="kb-key" [disabled]="isKeyDisabled(key)" (click)="onKeyPress(key)">{{ key }}</button>
+      }
+      <button class="kb-key kb-action-key">&rarr;</button>
+    </div>
+
+    <!-- Bottom row: Tab, Space, OK, Cancel -->
+    <div class="kb-row kb-bottom-row">
+      <button class="kb-key kb-tab-key" (click)="onKeyPress('\t')">Tab</button>
+      <button class="kb-key kb-space-key" (click)="onKeySpace()">SPACE</button>
+      <button class="kb-key kb-ok-key" (click)="onKeyOk()">OK</button>
+      <button class="kb-key kb-cancel-key" (click)="onKeyCancel()">Cancel</button>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════════════════
+       CHOOSE COORDINATE SYSTEM POPUP (Figure 1-89)
+       Overlays the keyboard when the user clicks the coord-format button.
+       ═══════════════════════════════════════════════════════════════════════ -->
+  @if (showCoordSystemPopup) {
+    <div
+      class="coord-system-overlay"
+      tabindex="0"
+      role="none"
+      (click)="showCoordSystemPopup = false"
+      (keydown.enter)="showCoordSystemPopup = false"
+    >
+      <div
+        class="coord-system-popup"
+        tabindex="-1"
+        role="dialog"
+        (click)="$event.stopPropagation()"
+        (keydown)="$event.stopPropagation()"
+      >
+        <div class="coord-system-title">Choose Coordinate System</div>
+        <div class="coord-system-options">
+          @for (fmt of coordFormats; track fmt.label; let i = $index) {
+            <button
+              class="sms-btn coord-system-btn"
+              [class.coord-selected]="coordFormatIndex === i"
+              (click)="selectCoordFormat(i)"
+            >
+              {{ fmt.label }}
+            </button>
+          }
+        </div>
+      </div>
+    </div>
+  }
+</div>

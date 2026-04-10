@@ -1,3 +1,15 @@
+/**
+ * Store Settings Component Styles
+ * ================================
+ * Styles for the "Air To Ground: Store Settings" page.
+ *
+ * Numpad popup styles have been moved to the shared NumpadPopupComponent.
+ */
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   MAIN LAYOUT — two-column flex row
+   ═══════════════════════════════════════════════════════════════════════════ */
+
 .page-layout-ref {
   flex: 1;
   display: flex;
@@ -11,28 +23,40 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 8px;
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   SECTION LABELS
+   ═══════════════════════════════════════════════════════════════════════════ */
 
 .ref-section-label {
   color: #00ff99;
-  font-size: 12px;
+  font-size: 14px;
   font-weight: bold;
   text-transform: uppercase;
   letter-spacing: 1px;
   margin-bottom: 4px;
 }
 
+.section-gap {
+  margin-top: 16px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   FIELD ROWS
+   ═══════════════════════════════════════════════════════════════════════════ */
+
 .ref-field-row {
   display: flex;
   align-items: center;
-  gap: 16px;
-  margin-bottom: 6px;
+  gap: 12px;
+  margin-bottom: 8px;
 }
 
 .ref-label {
-  width: 100px;
-  font-size: 13px;
+  width: 110px;
+  font-size: 14px;
   color: #e0e0e0;
   font-family: 'Courier New', monospace;
 }
@@ -40,81 +64,259 @@
 .sms-btn.ref-val {
   min-width: 140px;
   padding: 10px 16px;
-  font-size: 13px;
+  font-size: 14px;
   background: #0a0a0a;
   border: 2px solid #555;
   border-radius: 6px;
   text-align: center;
 }
 
-.ref-input-box {
+.sms-btn.ref-apply-inline {
+  padding: 8px 12px;
+  font-size: 12px;
   background: #0a0a0a;
   border: 2px solid #555;
   border-radius: 6px;
-  padding: 2px;
 }
 
-.sms-input.ref {
-  background: transparent;
-  border: none;
+/* ─── Numpad trigger button (replaces old input boxes) ──────────────────── */
+
+.sms-btn.numpad-trigger {
+  background: #0a0a0a;
+  border: 2px solid #555;
+  border-radius: 6px;
   color: #e0e0e0;
   font-size: 14px;
   font-family: 'Courier New', monospace;
   text-align: center;
-  width: 120px;
-  padding: 8px;
-  outline: none;
+  min-width: 100px;
+  padding: 8px 16px;
+  cursor: pointer;
+
+  &:hover {
+    border-color: #777;
+    background: #151515;
+  }
+
+  &:active {
+    background: #0a2a4a;
+  }
 }
 
-/* Station selector (right column) */
-.station-selector {
-  width: 130px;
-  flex-shrink: 0;
+/* ─── Compact value button (angle/azimuth) ──────────────────────────────── */
+
+.sms-btn.ref-val-compact {
+  min-width: 80px;
+  padding: 8px 12px;
+  font-size: 14px;
+  background: #0a0a0a;
+  border: 2px solid #555;
+  border-radius: 6px;
+  color: #e0e0e0;
+  font-family: 'Courier New', monospace;
+  text-align: center;
+  cursor: pointer;
+
+  &:hover:not(.disabled) {
+    border-color: #777;
+    background: #151515;
+  }
+
+  &.disabled {
+    opacity: 0.4;
+    pointer-events: none;
+  }
+}
+
+/* ─── Offset value button (replaces input+unit boxes) ───────────────────── */
+
+.sms-btn.offset-val-btn {
+  background: #0a0a0a;
+  border: 2px solid #555;
+  border-radius: 6px;
+  color: #e0e0e0;
+  font-family: 'Courier New', monospace;
+  font-size: 14px;
+  text-align: center;
+  padding: 8px 12px;
+  min-width: 120px;
   display: flex;
   flex-direction: column;
   align-items: center;
+  gap: 2px;
+  cursor: pointer;
+
+  &:hover {
+    border-color: #777;
+    background: #151515;
+  }
+
+  &:active {
+    background: #0a2a4a;
+  }
+}
+
+.offset-val-text {
+  font-size: 16px;
+  color: #e0e0e0;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   TRIPLE-COLUMN ROWS — Offset N/E/D  &  Fuze Arm / Fn / Arm
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.ref-field-row-triple {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+
+.offset-group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.offset-header {
+  font-size: 13px;
+  color: #e0e0e0;
+  font-family: 'Courier New', monospace;
+  text-align: center;
+}
+
+.offset-unit {
+  color: #888;
+  font-size: 12px;
+  font-family: 'Courier New', monospace;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   PAIRED ROWS — Impact Angle / Impact Azimuth
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.ref-field-row-pair {
+  display: flex;
+  gap: 32px;
+  margin-bottom: 12px;
+}
+
+.pair-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.pair-header {
+  font-size: 13px;
+  color: #e0e0e0;
+  font-family: 'Courier New', monospace;
+}
+
+.pair-controls {
+  display: flex;
   gap: 6px;
+  align-items: center;
+}
+
+.sms-btn.ref-toggle {
+  padding: 8px 14px;
+  font-size: 13px;
+  background: #0a0a0a;
+  border: 2px solid #555;
+  border-radius: 6px;
+  position: relative;
+  min-width: 50px;
+  text-align: center;
+
+  &.active::after {
+    content: '';
+    position: absolute;
+    bottom: 2px;
+    left: 25%;
+    width: 50%;
+    height: 2px;
+    background: #00bcd4;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   FUZE VALUE BUTTONS
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.sms-btn.ref-val.fuze-val {
+  min-width: 110px;
+  padding: 10px 12px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   RIGHT COLUMN — station selector sidebar
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.station-sidebar {
+  width: 140px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
   padding-top: 4px;
 }
 
-.sta-label, .sta-store-label {
+.station-label {
   color: #00ff99;
-  font-size: 12px;
+  font-size: 14px;
   font-weight: bold;
   font-family: 'Courier New', monospace;
   text-align: center;
 }
 
-.sta-arrows {
+.nav-arrows {
   display: flex;
-  gap: 4px;
+  gap: 6px;
 }
 
-.sms-btn.sta-arrow {
+.sms-btn.nav-btn {
   width: 48px;
-  height: 48px;
-  font-size: 18px;
+  height: 44px;
+  font-size: 22px;
+  background: linear-gradient(180deg, #6a6a6a 0%, #2c2c2c 100%);
+  border: 2px solid #cfcfcf;
+  border-radius: 10px;
+  color: #fff;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 0;
+  cursor: pointer;
+
+  &:disabled {
+    opacity: 0.3;
+    cursor: default;
+  }
+}
+
+.sms-btn.nav-btn.sub-nav {
+  width: 48px;
+  height: 36px;
+  font-size: 18px;
 }
 
 .apply-to-label {
   color: #00ff99;
-  font-size: 11px;
-  font-weight: bold;
-  text-transform: uppercase;
-  margin-top: 8px;
+  font-size: 12px;
+  font-family: 'Courier New', monospace;
+  margin-top: 12px;
 }
 
 .sms-btn.apply-btn {
-  width: 110px;
-  padding: 8px;
-  background: #0a0a0a;
-  border: 2px solid #555;
-  border-radius: 6px;
+  min-width: 100px;
+  padding: 10px 16px;
   font-size: 13px;
+  background: linear-gradient(180deg, #4a5a6a 0%, #1c2c3c 100%);
+  border: 2px solid #cfcfcf;
+  border-radius: 10px;
+  color: #fff;
+  font-family: 'Courier New', monospace;
+  cursor: pointer;
 }
 
 .seg-label {
@@ -124,4 +326,114 @@
   font-family: 'Courier New', monospace;
 }
 
-.no-selection { color: #888; font-size: 13px; padding: 12px 0; }
+.no-selection {
+  color: #888;
+  font-size: 13px;
+  padding: 12px 0;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   POPUP OVERLAYS — shared foundation styles
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.sms-popup-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+
+.sms-popup {
+  background: #1a1a1a;
+  border: 2px solid #555;
+  border-radius: 8px;
+  padding: 16px;
+  min-width: 200px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.8);
+}
+
+.sms-popup-title {
+  color: #f8f8f8;
+  font-size: 16px;
+  font-weight: bold;
+  text-transform: uppercase;
+  text-align: center;
+  padding-bottom: 12px;
+  font-family: 'Courier New', monospace;
+}
+
+.sms-popup-opts {
+  display: flex;
+  flex-direction: row;
+  gap: 6px;
+}
+
+.sms-popup-opt {
+  min-width: 120px;
+  height: 60px;
+  padding: 10px 16px;
+  background: #0a0a0a;
+  border: 2px solid #444;
+  border-radius: 6px;
+  color: #e0e0e0;
+  font-size: 15px;
+  font-family: 'Courier New', monospace;
+  cursor: pointer;
+  text-align: center;
+  transition: background 0.1s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &:hover {
+    background: #252525;
+    border-color: #777;
+  }
+
+  &.selected {
+    background: linear-gradient(180deg, #1a4a8a 0%, #0d3366 100%);
+    border-color: #4a9eff;
+    color: #fff;
+  }
+}
+
+.done-btn {
+  min-width: 180px !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   FUZE FUNCTION POPUP — 4×4 grid
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.fuze-fn-popup {
+  min-width: 520px;
+  padding: 16px 20px;
+}
+
+.fuze-fn-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+  width: 100%;
+}
+
+.sms-popup-opt.fuze-fn-opt {
+  min-width: 110px;
+  height: 50px;
+  font-size: 13px;
+  padding: 8px 6px;
+}
+
+.fuze-fn-current {
+  color: #00ff99;
+  font-size: 14px;
+  font-family: 'Courier New', monospace;
+  margin-top: 8px;
+}

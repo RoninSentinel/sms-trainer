@@ -1,0 +1,126 @@
+/**
+ * guarded-button.component.scss
+ * =============================
+ * Styles for the reusable two-step guarded button.
+ * A curtain overlay covers the button and must be clicked to slide open,
+ * revealing the real button underneath.  Matches the real GSMS guarded
+ * switch pattern.
+ */
+
+:host {
+  display: inline-block;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   CONTAINER
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.guard-container {
+  position: relative;
+  overflow: hidden;
+  border-radius: 0;
+  min-width: 100px;
+  outline: 2px solid #ffffff;
+}
+
+.guard-container.guard-disabled {
+  opacity: 0.3;
+  pointer-events: none;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   UNDERLYING BUTTON
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.guard-btn {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-width: 100px;
+  padding: 12px 16px;
+  font-size: 15px;
+  font-weight: bold;
+  font-family: 'Courier New', monospace;
+  text-transform: uppercase;
+  background: #555;
+  border: 2px solid #777;
+  border-radius: 0;
+  color: #fff;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.guard-btn:hover:not(:disabled) {
+  filter: brightness(1.15);
+}
+
+.guard-btn:disabled {
+  cursor: default;
+}
+
+/* Active visual state (e.g. store is powered on) */
+.guard-btn.guard-btn-active {
+  background: #2e7d32;
+  border-color: #4caf50;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   CURTAIN OVERLAY
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.guard-curtain {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform 0.35s ease-in-out, opacity 0.35s ease-in-out;
+  z-index: 1;
+}
+
+.guard-curtain:hover {
+  filter: brightness(1.15);
+}
+
+/* When armed — curtain slides up and fades out */
+.guard-curtain.curtain-open {
+  transform: translateY(-100%);
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* ── Curtain color themes ─────────────────────────────────────────────── */
+
+:host([data-curtain='brass']) .guard-curtain {
+  background: yellow;
+  border: 9px solid;
+  border-image: linear-gradient(180deg, red 0%, #ff8888 45%, #cc0000 55%, red 100%) 1;
+  color: #000;
+  font-family: monospace;
+  font-weight: bold;
+}
+
+:host([data-curtain='red']) .guard-curtain {
+  background: linear-gradient(180deg, #8b1a1a 0%, #6b0e0e 50%, #4a0808 100%);
+  border: 2px solid #cc4444;
+}
+
+:host([data-curtain='grey']) .guard-curtain {
+  background: linear-gradient(180deg, #555 0%, #3a3a3a 50%, #252525 100%);
+  border: 2px solid #777;
+}
+
+/* ── Curtain label ────────────────────────────────────────────────────── */
+
+.curtain-label {
+  color: #000;
+  font-family: 'Courier New', monospace;
+  font-size: 15px;
+  font-weight: bold;
+  text-transform: capitalize;
+  z-index: 1;
+}

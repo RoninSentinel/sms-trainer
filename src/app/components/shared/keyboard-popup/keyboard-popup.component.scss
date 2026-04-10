@@ -1,0 +1,236 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   KeyboardPopupComponent Styles
+   Reusable on-screen QWERTY keyboard matching GSMS Figures 1-87 – 1-90.
+   Extracted from select-target.component.scss.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.keyboard-page {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 4px 8px;
+  overflow: hidden;
+  background: #1a1a1a;
+  border: 2px solid #888;
+  border-radius: 4px;
+  /* Needed so the coord-system popup overlay positions relative to this. */
+  position: relative;
+}
+
+/* ── Keyboard Header ────────────────────────────────────────────────────── */
+
+.kb-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  border-bottom: 1px solid #555;
+  margin-bottom: 6px;
+  min-height: 40px;
+}
+
+.kb-elev-label {
+  color: #e0e0e0;
+  font-size: 14px;
+  font-family: 'Courier New', monospace;
+  font-weight: bold;
+  white-space: nowrap;
+}
+
+.kb-input-display {
+  flex: 1;
+  background: #000;
+  border: 2px solid #666;
+  border-radius: 4px;
+  padding: 6px 10px;
+  color: #fff;
+  font-size: 15px;
+  font-family: 'Courier New', monospace;
+  min-height: 32px;
+  overflow-x: auto;
+  white-space: nowrap;
+}
+
+.kb-cursor {
+  animation: cursor-blink 0.8s infinite;
+  color: #00ff00;
+}
+
+@keyframes cursor-blink {
+  50% { opacity: 0; }
+}
+
+.sms-btn.kb-format-btn,
+.sms-btn.kb-unit-btn,
+.sms-btn.kb-ref-btn {
+  padding: 6px 12px;
+  font-size: 12px;
+  border-radius: 6px;
+  border: 2px solid #aaa;
+  background: linear-gradient(180deg, #6a6a6a 0%, #3a3a3a 100%);
+  color: #fff;
+  font-family: 'Courier New', monospace;
+  white-space: nowrap;
+  min-width: 70px;
+  text-align: center;
+  cursor: pointer;
+}
+
+/* ── Key Grid ───────────────────────────────────────────────────────────── */
+
+.kb-keys {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  justify-content: center;
+}
+
+.kb-row {
+  display: flex;
+  gap: 4px;
+  justify-content: center;
+}
+
+.kb-key {
+  min-width: 48px;
+  height: 48px;
+  font-size: 18px;
+  font-weight: bold;
+  font-family: 'Courier New', monospace;
+  border: 2px solid #aaa;
+  border-radius: 6px;
+  background: linear-gradient(180deg, #c0c0c0 0%, #808080 100%);
+  color: #111;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.1s;
+}
+
+.kb-key:hover {
+  background: linear-gradient(180deg, #d0d0d0 0%, #909090 100%);
+}
+
+.kb-key:active {
+  background: linear-gradient(180deg, #909090 0%, #606060 100%);
+}
+
+/* Disabled keys (e.g. letter keys in elevation mode) — darker, no interaction */
+.kb-key:disabled {
+  background: linear-gradient(180deg, #555 0%, #333 100%);
+  border-color: #444;
+  color: #666;
+  cursor: default;
+  pointer-events: none;
+}
+
+/* Action keys (Del, Clr, Backspace, Arrow) */
+.kb-action-key {
+  min-width: 60px;
+  font-size: 14px;
+  background: linear-gradient(180deg, #999 0%, #555 100%);
+  color: #fff;
+}
+
+/* Bottom row special keys */
+.kb-bottom-row {
+  margin-top: 4px;
+}
+
+.kb-tab-key {
+  min-width: 70px;
+  font-size: 14px;
+}
+
+.kb-space-key {
+  flex: 1;
+  max-width: 400px;
+  font-size: 15px;
+  letter-spacing: 4px;
+}
+
+.kb-ok-key {
+  min-width: 70px;
+  font-size: 16px;
+  background: linear-gradient(180deg, #c0c0c0 0%, #808080 100%);
+  color: #111;
+  font-weight: bold;
+}
+
+.kb-cancel-key {
+  min-width: 80px;
+  font-size: 14px;
+  background: linear-gradient(180deg, #444 0%, #222 100%);
+  color: #fff;
+  font-weight: bold;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   CHOOSE COORDINATE SYSTEM POPUP (Figure 1-89)
+   Overlays the keyboard when the user clicks the coord-format button in
+   coordinates mode.  Matches the demo screenshot layout: green title,
+   four horizontal option buttons, selected button highlighted in blue.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.coord-system-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 40px;
+  z-index: 60;
+}
+
+.coord-system-popup {
+  background: #1a1a1a;
+  border: 2px solid #888;
+  border-radius: 8px;
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.8);
+}
+
+.coord-system-title {
+  color: #00ff99;
+  font-size: 16px;
+  font-weight: bold;
+  font-family: 'Courier New', monospace;
+  text-align: center;
+}
+
+.coord-system-options {
+  display: flex;
+  gap: 8px;
+}
+
+.sms-btn.coord-system-btn {
+  min-width: 120px;
+  height: 50px;
+  font-size: 14px;
+  border-radius: 8px;
+  border: 2px solid #cfcfcf;
+  background: linear-gradient(180deg, #6a6a6a 0%, #2c2c2c 100%);
+  color: #fff;
+  font-family: 'Courier New', monospace;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+
+  &:hover {
+    background: linear-gradient(180deg, #7a7a7a 0%, #3c3c3c 100%);
+    border-color: #eee;
+  }
+
+  &.coord-selected {
+    background: linear-gradient(180deg, #1a44cc 0%, #0a1a6a 100%);
+    border-color: #8899ff;
+  }
+}

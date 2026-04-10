@@ -1,89 +1,112 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
-import { Subscription } from 'rxjs';
-import { SmsService, Station, StoreType } from '../../services/sms.service';
+import { Component, computed, inject, signal } from '@angular/core';
+import { NgClass } from '@angular/common';
+import { SmsService, Station, StoreType, StoreStatus } from '../../services/sms.service';
 
 @Component({
   selector: 'app-inventory-page',
+  standalone: true,
+  imports: [NgClass],
   templateUrl: './inventory.component.html',
   styleUrls: ['./inventory.component.scss'],
 })
-export class InventoryPageComponent implements OnInit, OnDestroy {
-  stations: Station[] = [];
-  selectedStationId: number | null = null;
-  verifyState: 'idle' | 'in-progress' | 'done' = 'idle';
-  private sub!: Subscription;
+export class InventoryPageComponent {
+  protected readonly sms = inject(SmsService);
+  protected readonly stations = this.sms.stations;
+
+  readonly selectedStationId = signal<number | null>(null);
+  readonly verifyState = signal<'idle' | 'in-progress' | 'done'>('idle');
 
   storeTypeOptions: { label: string; value: StoreType; trainer: boolean }[] = [
-    { label: 'GBU12 Legacy',  value: 'GBU12',    trainer: false },
-    { label: 'GBU49 Legacy',  value: 'GBU49',    trainer: false },
-    { label: 'JDAM Legacy',   value: 'JDAM',     trainer: false },
-    { label: 'GBU12T Legacy', value: 'GBU12',    trainer: true  },
-    { label: 'GBU49T Legacy', value: 'GBU49',    trainer: true  },
-    { label: 'JDAMT Legacy',  value: 'JDAM',     trainer: true  },
-    { label: 'M310 Dual HF',  value: 'Hellfire', trainer: false },
-    { label: 'M310T HF Trn',  value: 'Hellfire', trainer: true  },
-    { label: 'GBU54',           value: 'GBU54',      trainer: false },
-    { label: 'UAI',           value: 'UAI',      trainer: false },
+    { label: 'GBU12 Legacy', value: 'GBU12', trainer: false },
+    { label: 'GBU49 Legacy', value: 'GBU49', trainer: false },
+    { label: 'GBU38 Legacy', value: 'GBU38', trainer: false },
+    { label: 'GBU12T Legacy', value: 'GBU12', trainer: true },
+    { label: 'GBU49T Legacy', value: 'GBU49', trainer: true },
+    { label: 'GBU38T Legacy', value: 'GBU38', trainer: true },
+    { label: 'M310\nDual HF', value: 'Hellfire', trainer: false },
+    { label: 'M310T HF Trn', value: 'Hellfire', trainer: true },
+    { label: 'M299 Quad HF', value: 'Hellfire', trainer: false },
+    { label: 'M299T HF Trn', value: 'Hellfire', trainer: true },
+    { label: 'GBU54', value: 'GBU54', trainer: false },
   ];
 
-  constructor(public sms: SmsService) {}
-  ngOnInit(): void { this.sub = this.sms.stations$.subscribe(s => { this.stations = s; }); }
-  ngOnDestroy(): void { this.sub.unsubscribe(); }
+  protected readonly selectedStation = computed<Station | undefined>(() => {
+    const id = this.selectedStationId();
+    return id !== null ? this.stations().find((s) => s.id === id) : undefined;
+  });
 
-  get selectedStation(): Station | undefined {
-    if (this.selectedStationId === null) { return undefined; }
-    return this.stations.find(s => s.id === this.selectedStationId);
+  protected readonly titleBar = computed(() =>
+    this.selectedStationId() !== null ? 'Inventory: Station ' + String(this.selectedStationId()) : 'Inventory',
+  );
+
+  protected readonly canClearStore = computed(() => {
+    const st = this.selectedStation();
+    return st !== undefined && st.storeType !== '';
+  });
+
+  selectStation(id: number): void {
+    this.selectedStationId.set(id);
+    this.sms.selectedStationId.set(id);
   }
 
-  get titleBar(): string {
-    return this.selectedStationId !== null
-      ? 'Inventory: Station ' + String(this.selectedStationId)
-      : 'Inventory';
-  }
-
-  selectStation(id: number): void { 
-    this.selectedStationId = id; 
-    this.sms.selectedStationId$.next(id);
-  }
-
-  assignStore(type: StoreType): void {
-    if (this.selectedStationId === null) { return; }
-    const id = this.selectedStationId;
-    const updated = this.stations.map(s =>
-      s.id === id ? { ...s, storeType: type, storeStatus: 'UNVRFD' as any } : s
+  assignStore(type: StoreType, trainer: boolean): void {
+    const id = this.selectedStationId();
+    if (id === null) return;
+    const station = this.stations().find((s) => s.id === id);
+    if (!station?.loadable) return;
+    this.sms.setStationStoreType(id, type, trainer);
+    this.sms.stations.update((list) =>
+      list.map((s) => {
+        if (s.id !== id) return s;
+        return {
+          ...s,
+          storeStatus: 'UNVRFD' as StoreStatus,
+          substations: s.substations?.map((sub) => ({
+            ...sub,
+            storeStatus: 'UNVRFD' as StoreStatus,
+          })),
+        };
+      }),
     );
-    this.sms.stations$.next(updated);
-    this.sms.selectedStationId$.next(id);
   }
 
   clearStore(): void {
-    if (this.selectedStationId === null) { return; }
-    const id = this.selectedStationId;
-    const updated = this.stations.map(s =>
-      s.id === id ? { ...s, storeType: '' as any, storeStatus: '' as any } : s
-    );
-    this.sms.stations$.next(updated);
+    const id = this.selectedStationId();
+    if (id === null) return;
+    this.sms.setStationStoreType(id, '');
+    this.sms.stations.update((list) => list.map((s) => (s.id === id ? { ...s, storeStatus: '' as StoreStatus } : s)));
   }
 
-  clearStation(): void { this.clearStore(); this.selectedStationId = null; }
+  clearStation(): void {
+    this.clearStore();
+    this.selectedStationId.set(null);
+    this.sms.selectedStationId.set(null);
+  }
 
   startVerify(): void {
-    this.verifyState = 'in-progress';
+    this.verifyState.set('in-progress');
     setTimeout(() => {
-      this.verifyState = 'done';
-      const updated = this.stations.map(s =>
-        ({ ...s, storeStatus: s.storeType ? ('IDLE' as any) : ('' as any) })
+      this.verifyState.set('done');
+      this.sms.stations.update((list) =>
+        list.map((s) => ({
+          ...s,
+          storeStatus: (s.storeType ? 'IDLE' : '') as StoreStatus,
+          substations: s.substations?.map((sub) => ({
+            ...sub,
+            storeStatus: (sub.storeType ? 'IDLE' : '') as StoreStatus,
+          })),
+        })),
       );
-      this.sms.stations$.next(updated);
     }, 2500);
   }
 
-  cancelVerify(): void { this.verifyState = 'idle'; }
-  modify(): void { this.verifyState = 'idle'; }
-  getStatusClass(s: string): string { return this.sms.getStatusClass(s as any); }
-
-  get canClearStore(): boolean {
-    const st = this.selectedStation;
-    return st !== undefined && st.storeType !== '';
+  cancelVerify(): void {
+    this.verifyState.set('idle');
+  }
+  modify(): void {
+    this.verifyState.set('idle');
+  }
+  getStatusClass(s: StoreStatus): string {
+    return this.sms.getStatusClass(s);
   }
 }

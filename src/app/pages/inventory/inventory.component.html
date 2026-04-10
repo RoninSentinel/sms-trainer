@@ -1,64 +1,89 @@
-<div class="title-bar">{{ titleBar }}</div>
+<div class="title-bar">{{ titleBar() }}</div>
 <div class="page-layout">
   <div class="control-section">
-    <button class="sms-btn" (click)="clearStore()" [disabled]="!canClearStore">Clear Store</button>
-    <button class="sms-btn" (click)="clearStation()" [disabled]="selectedStationId === null">Clear Station</button>
+    <button class="sms-btn" (click)="clearStore()" [disabled]="!canClearStore()">Clear Store</button>
+    <button class="sms-btn" (click)="clearStation()" [disabled]="selectedStationId() === null">Clear Station</button>
     <button class="sms-btn" disabled>Settings</button>
-    <button class="sms-btn guarded"
-            *ngIf="verifyState !== 'done'"
-            (click)="startVerify()"
-            [disabled]="verifyState === 'in-progress'">
-      {{ verifyState === 'in-progress' ? 'Verifying...' : 'Start Verify' }}
-    </button>
-    <button class="sms-btn" *ngIf="verifyState === 'in-progress'" (click)="cancelVerify()">Cancel Verify</button>
-    <button class="sms-btn guarded" *ngIf="verifyState === 'done'" (click)="modify()">Modify</button>
+    @if (verifyState() !== 'done') {
+      <button class="sms-btn guarded"
+        (click)="startVerify()"
+        [disabled]="verifyState() === 'in-progress'">
+        {{ verifyState() === 'in-progress' ? 'Verifying...' : 'Start Verify' }}
+      </button>
+    }
+    @if (verifyState() === 'in-progress') {
+      <button class="sms-btn" (click)="cancelVerify()">Cancel Verify</button>
+    }
+    @if (verifyState() === 'done') {
+      <button class="sms-btn guarded" (click)="modify()">Modify</button>
+    }
   </div>
 
   <div class="page-section">
     <div class="station-row-btns">
-      <button *ngFor="let st of stations"
-              class="sms-btn"
-              [class.active]="selectedStationId === st.id"
-              (click)="selectStation(st.id)">
-        Sta {{ st.id }}
-      </button>
+      @for (st of stations(); track st.id) {
+        @if (st.loadable) {
+          <button
+            class="sms-btn"
+            [class.active]="selectedStationId() === st.id"
+            (click)="selectStation(st.id)">
+            Sta {{ st.id }}
+          </button>
+        }
+      }
     </div>
 
-    <div *ngIf="verifyState === 'in-progress'" class="verify-banner">
-      <div class="spinner"></div>
-      <span>Verify In-Process...</span>
-    </div>
+    @if (verifyState() === 'in-progress') {
+      <div class="verify-banner">
+        <div class="spinner"></div>
+        <span>Verify In-Process...</span>
+      </div>
+    }
 
-    <div *ngIf="verifyState !== 'in-progress' && selectedStationId !== null" class="store-grid">
-      <div class="group-label">Store Type Selection</div>
-      <div class="store-grid-inner">
-        <button *ngFor="let opt of storeTypeOptions"
-                class="sms-btn store-type-btn"
-                [class.trainer-btn]="opt.trainer"
-                (click)="assignStore(opt.value)">
-          <span *ngIf="opt.trainer" class="trainer-label">TRAINER</span>
-          {{ opt.label }}
-        </button>
+    @if (verifyState() !== 'in-progress' && selectedStationId() !== null) {
+      <div class="store-grid">
+        <div class="group-label">Store Type Selection</div>
+        <div class="store-grid-inner">
+          @for (opt of storeTypeOptions; track opt.label) {
+            <button
+              class="sms-btn store-type-btn"
+              [class.trainer-btn]="opt.trainer"
+              (click)="assignStore(opt.value, opt.trainer)">
+              @if (opt.trainer) {
+                <span class="trainer-label">TRAINER</span>
+              }
+              {{ opt.label }}
+            </button>
+          }
+        </div>
       </div>
-    </div>
+    }
 
-    <div *ngIf="selectedStation && selectedStation.storeType" class="station-detail">
-      <div class="detail-row">
-        <span class="detail-label">Store:</span>
-        <span>{{ selectedStation.storeType }}</span>
-      </div>
-      <div class="detail-row">
-        <span class="detail-label">Status:</span>
-        <span class="status-chip" [ngClass]="getStatusClass(selectedStation.storeStatus)">
-          {{ selectedStation.storeStatus || '--' }}
-        </span>
-      </div>
-      <div class="detail-row" *ngIf="selectedStation.launcher">
-        <span class="detail-label">Launcher:</span>
-        <span>{{ selectedStation.launcher }}</span>
-      </div>
-    </div>
+    @if (selectedStation(); as st) {
+      @if (st.storeType) {
+        <div class="station-detail">
+          <div class="detail-row">
+            <span class="detail-label">Store:</span>
+            <span>{{ st.storeType }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Status:</span>
+            <span class="status-chip" [ngClass]="getStatusClass(st.storeStatus)">
+              {{ st.storeStatus || '--' }}
+            </span>
+          </div>
+          @if (st.launcher) {
+            <div class="detail-row">
+              <span class="detail-label">Launcher:</span>
+              <span>{{ st.launcher }}</span>
+            </div>
+          }
+        </div>
+      }
+    }
 
-    <div *ngIf="selectedStationId === null" class="no-selection">Select a station above.</div>
+    @if (selectedStationId() === null) {
+      <div class="no-selection">Select a station above.</div>
+    }
   </div>
 </div>
